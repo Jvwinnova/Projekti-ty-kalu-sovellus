@@ -7,9 +7,21 @@
   "colourseekingcursor": {
     "hotkey": "f3",
     "speed": 12.524590163934427,
-    "target_r": 0,
+    "target_r": 255,
     "target_g": 0,
     "target_b": 0,
-    "tolerance": 147.0984455958549
+    "tolerance": 56.968911917098445,
+    "colors": [
+      {
+        "r": 255,
+        "g": 26,
+        "b": 18
+      },
+      {
+        "r": 255,
+        "g": 0,
+        "b": 0
+      }
+    ]
   }
 }

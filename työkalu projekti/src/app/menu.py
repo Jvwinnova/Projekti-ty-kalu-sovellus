@@ -24,4 +24,4 @@ def create_menu(root):
 def show_about(root):
     """Show about dialog"""
     from tkinter import messagebox
-    messagebox.showinfo("About", "Auto Clicker Tool v1.0\nA simple Python GUI tool for automation")
+    messagebox.showinfo("About", "Tool Kit\nA collection of useful and fun tools built with Python.")

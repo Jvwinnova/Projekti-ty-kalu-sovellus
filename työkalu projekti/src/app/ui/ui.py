@@ -16,13 +16,13 @@ def create_ui(root):
     title_label.pack(pady=20)
     
     # Auto Clicker button
-    autoclicker_btn = ttk.Button(main_frame, text="Open Auto Clicker", 
+    autoclicker_btn = ttk.Button(main_frame, text="Auto Clicker", 
                                   command=open_autoclicker_window)
     
     autoclicker_btn.pack(pady=10, padx=20, fill=tk.X)
     
     # Colour Seeking Cursor button
-    colour_btn = ttk.Button(main_frame, text="Open Colour Seeking Cursor", 
+    colour_btn = ttk.Button(main_frame, text="Colour Seeking Cursor", 
                              command=open_colourseekingcursor_window)
     colour_btn.pack(pady=10, padx=20, fill=tk.X)
     

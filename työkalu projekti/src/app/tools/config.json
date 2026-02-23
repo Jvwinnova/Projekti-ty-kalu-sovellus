@@ -1,0 +1,14 @@
+{
+  "autoclicker": {
+    "hotkey": "f3",
+    "click_interval": 0.01,
+    "mouse_button": "left"
+  },
+  "colourseekingcursor": {
+    "hotkey": "f2",
+    "target_r": 255,
+    "target_g": 0,
+    "target_b": 0,
+    "tolerance": 100.0
+  }
+}
