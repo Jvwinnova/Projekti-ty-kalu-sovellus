@@ -11,19 +11,25 @@ import ctypes
 from ctypes import wintypes
 from PIL import ImageGrab
 
+try:
+    from src.app.window_icon import apply_app_icon
+except ModuleNotFoundError:
+    def apply_app_icon(window):
+        return
+
 class ColourSeekingCursor:
     """A GUI app that jumps the mouse to the center of a nearby matching color cluster."""
 
     CONFIG_SECTION = "colourseekingcursor"
     SAMPLE_STEP = 5          # Step size when scanning pixels (higher = faster, less accurate)
-    LOOP_DELAY = 0.1         # Delay between each seek iteration
+    LOOP_DELAY = 0.01         # Delay between each seek iteration
     TOGGLE_DEBOUNCE = 0.2    # Ignore repeated hotkey events fired too quickly
     STOP_JOIN_TIMEOUT = 0.5
-
+    Strength = " "
     DEFAULT_CONFIG = {
         "hotkey": "f3",
         "colors": [
-            {"r": 255, "g": 0, "b": 0}
+            {"r": 0, "g": 0, "b": 0}
         ],
         "tolerance": 100
     }
@@ -31,8 +37,10 @@ class ColourSeekingCursor:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Colour Seeking Cursor")
-        self.root.geometry("440x500")
-        self.root.resizable(False, False)
+        self.root.geometry("600x520")
+        self.root.resizable(True, True)
+        apply_app_icon(self.root)
+        self._setup_fullscreen_controls()
 
         self.is_running = False
         self.worker_thread = None
@@ -68,11 +76,18 @@ class ColourSeekingCursor:
         self.root.protocol("WM_DELETE_WINDOW", self.on_window_close)
         self.root.bind("<Destroy>", self._on_root_destroy, add="+")
 
+    def _setup_fullscreen_controls(self):
+        self.root.bind("<F11>", lambda event: self.toggle_fullscreen(), add="+")
+
+    def toggle_fullscreen(self):
+        self.root.attributes("-fullscreen", not bool(self.root.attributes("-fullscreen")))
+
     # ------------------------ UI ------------------------
     def _build_ui(self):
         ttk.Label(self.root, text="Colour Seeking Cursor",
                   font=("Segoe UI", 13, "bold")).pack(pady=10)
-        ttk.Label(self.root, text="Jumps the mouse to a selected screen color").pack(pady=5)
+        ttk.Label(self.root, text="Jumps the mouse to a selected color on the screen closest to the cursor").pack(pady=5)
+        ttk.Label(self.root, text="not recommended to use without a shortcut key").pack(pady=5)
 
         self._build_color_controls()
         self._build_tolerance_control()
@@ -114,7 +129,7 @@ class ColourSeekingCursor:
         self._refresh_color_listbox()
 
     def _build_tolerance_control(self):
-        ttk.Label(self.root, text="Color Tolerance (Max Difference)").pack(pady=5)
+        ttk.Label(self.root, text="Color Tolerance (lower the more stricter)").pack(pady=5)
         self.tolerance_var = tk.DoubleVar(value=self.settings.get("tolerance", 100))
         self.tolerance_var.trace_add("write", self.on_tolerance_changed)
         ttk.Scale(
@@ -299,9 +314,29 @@ class ColourSeekingCursor:
                 clusters,
                 key=lambda cluster: math.hypot(cluster[0] - cx, cluster[1] - cy)
             )
+            if cluster_size < 3:
+                self.Strength = "Negligible"
+            elif cluster_size < 30:
+                self.Strength = "Very Low"
+            elif cluster_size < 80:
+                self.Strength = "Low"
+            elif cluster_size < 150:
+                self.Strength = "Modest"    
+            elif cluster_size < 250:
+                self.Strength = "Moderate"
+            elif cluster_size < 500: 
+                self.Strength = "High"
+            elif cluster_size < 1000:
+                self.Strength = "Very High"
+            elif cluster_size < 5000:
+                self.Strength = "Ultra High"
+            else:
+                self.Strength = "Extremely High"
+                        
+            
             pyautogui.moveTo(center_x, center_y)
             self._set_runtime_status(
-                f"Status: Seeking (Cluster center, {cluster_size} pts)",
+                f"Status: Seeking (pixel density: {cluster_size}  {self.Strength})",
                 "green"
             )
         else:

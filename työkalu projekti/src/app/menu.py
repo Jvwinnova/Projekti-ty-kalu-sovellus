@@ -1,5 +1,18 @@
 import tkinter as tk
-from tkinter import ttk
+
+
+def _is_fullscreen(window):
+    return bool(window.attributes("-fullscreen"))
+
+
+def toggle_fullscreen(window):
+    """Toggle fullscreen mode for a given window."""
+    window.attributes("-fullscreen", not _is_fullscreen(window))
+
+
+def bind_fullscreen_shortcuts(window):
+    """Bind fullscreen shortcuts to a window."""
+    window.bind("<F11>", lambda event: toggle_fullscreen(window), add="+")
 
 
 def create_menu(root):
@@ -17,6 +30,8 @@ def create_menu(root):
     help_menu = tk.Menu(menubar, tearoff=0)
     menubar.add_cascade(label="Help", menu=help_menu)
     help_menu.add_command(label="About", command=lambda: show_about(root))
+
+    bind_fullscreen_shortcuts(root)
     
     return menubar
 

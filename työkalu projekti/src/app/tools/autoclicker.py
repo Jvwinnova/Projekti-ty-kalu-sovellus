@@ -18,6 +18,12 @@ import os
 # Used to detect global hotkeys
 import keyboard
 
+try:
+    from src.app.window_icon import apply_app_icon
+except ModuleNotFoundError:
+    def apply_app_icon(window):
+        return
+
 
 # Remove built-in delay between pyautogui actions
 pyautogui.PAUSE = 0
@@ -41,6 +47,8 @@ class AutoClicker:
         self.root = root
         self.root.title("Auto Clicker")
         self.root.geometry("500x400")
+        apply_app_icon(self.root)
+        self._setup_fullscreen_controls()
          
         
 
@@ -126,6 +134,13 @@ class AutoClicker:
 
         # Bind the hotkey immediately
         self.bind_hotkey()
+
+    # ---------------- Window Controls ---------------- #
+    def _setup_fullscreen_controls(self):
+        self.root.bind("<F11>", lambda event: self.toggle_fullscreen(), add="+")
+
+    def toggle_fullscreen(self):
+        self.root.attributes("-fullscreen", not bool(self.root.attributes("-fullscreen")))
 
     # ---------------- Config ---------------- #
 

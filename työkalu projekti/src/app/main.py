@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from src.app.menu import create_menu
 from src.app.ui.ui import create_ui
+from src.app.window_icon import apply_app_icon
 
 
 def main():
@@ -15,6 +16,7 @@ def main():
     root = tk.Tk()
     root.title("Tool Kit")
     root.geometry("350x300")
+    apply_app_icon(root)
     
     # Create menu bar
     create_menu(root)
