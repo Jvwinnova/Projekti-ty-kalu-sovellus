@@ -17,6 +17,13 @@ except ModuleNotFoundError:
     def apply_app_icon(window):
         return
 
+
+def _get_user_config_path():
+    base_dir = os.getenv("APPDATA") or os.path.expanduser("~")
+    config_dir = os.path.join(base_dir, "ToolKit")
+    return os.path.join(config_dir, "config.json")
+
+
 class ColourSeekingCursor:
     """A GUI app that jumps the mouse to the center of a nearby matching color cluster."""
 
@@ -37,7 +44,7 @@ class ColourSeekingCursor:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Colour Seeking Cursor")
-        self.root.geometry("600x520")
+        self.root.geometry("620x550")
         self.root.resizable(True, True)
         apply_app_icon(self.root)
         self._setup_fullscreen_controls()
@@ -50,6 +57,7 @@ class ColourSeekingCursor:
         self.hotkey_hook = None
         self.hotkey_binding = None
         self.hotkey_is_down = False
+        self.is_recording_hotkey = False
         self.color_pick_thread = None
         self.color_pick_in_progress = False
         self.is_closing = False
@@ -58,7 +66,7 @@ class ColourSeekingCursor:
         self.last_error = None
         self._updating_color_inputs = False
 
-        self.config_path = os.path.join(os.path.dirname(__file__), "..", "config.json")
+        self.config_path = _get_user_config_path()
         self.config = self.load_config()
         self.settings = self.config.setdefault(
             self.CONFIG_SECTION, self.DEFAULT_CONFIG.copy()
@@ -129,9 +137,11 @@ class ColourSeekingCursor:
         self._refresh_color_listbox()
 
     def _build_tolerance_control(self):
-        ttk.Label(self.root, text="Color Tolerance (lower the more stricter)").pack(pady=5)
+        self.tolerance_label_var = tk.StringVar()
+        ttk.Label(self.root, textvariable=self.tolerance_label_var).pack(pady=5)
         self.tolerance_var = tk.DoubleVar(value=self.settings.get("tolerance", 100))
         self.tolerance_var.trace_add("write", self.on_tolerance_changed)
+        self._update_tolerance_label()
         ttk.Scale(
             self.root, from_=10, to=255, orient=tk.HORIZONTAL, variable=self.tolerance_var
         ).pack(padx=20, fill=tk.X)
@@ -469,7 +479,7 @@ class ColourSeekingCursor:
         return "+" not in hotkey and "," not in hotkey
 
     def _handle_single_key_hotkey_event(self, event):
-        if self.is_closing:
+        if self.is_closing or self.is_recording_hotkey:
             return
         if event.event_type == "down":
             if self.hotkey_is_down:
@@ -498,7 +508,7 @@ class ColourSeekingCursor:
                 self._set_status(f"Status: Hotkey error ({e})", "red")
 
     def toggle_seeking(self):
-        if self.is_closing:
+        if self.is_closing or self.is_recording_hotkey:
             return
         now = time.monotonic()
         if (now - self.last_toggle_time) < self.TOGGLE_DEBOUNCE:
@@ -517,6 +527,8 @@ class ColourSeekingCursor:
     def record_hotkey(self):
         if self.is_closing:
             return
+        self.is_recording_hotkey = True
+        self._safe_remove_hotkey_binding()
         self.record_label.config(text="Press desired hotkey...")
         self._safe_remove_hotkey_hook()
 
@@ -531,6 +543,7 @@ class ColourSeekingCursor:
                 self.current_hotkey = captured_hotkey
                 self.update_hotkey_display()
                 self.bind_hotkey()
+                self.is_recording_hotkey = False
                 self.record_label.config(text="")
                 self._safe_remove_hotkey_hook()
                 self.save_settings()
@@ -540,6 +553,8 @@ class ColourSeekingCursor:
         try:
             self.hotkey_hook = keyboard.hook(on_key)
         except Exception as e:
+            self.is_recording_hotkey = False
+            self.bind_hotkey()
             self._set_status(f"Status: Hotkey record error ({e})", "red")
 
     def reset_hotkey(self):
@@ -630,7 +645,17 @@ class ColourSeekingCursor:
     def on_tolerance_changed(self, *args):
         if self.is_closing:
             return
+        self._update_tolerance_label()
         self.save_settings()
+
+    def _update_tolerance_label(self):
+        try:
+            value = int(round(float(self.tolerance_var.get())))
+        except Exception:
+            value = 0
+        self.tolerance_label_var.set(
+            f"Color Tolerance (lower the more stricter): {value}"
+        )
 
     def add_color_combination(self):
         if self.is_closing:

@@ -32,6 +32,12 @@ pyautogui.PAUSE = 0
 pyautogui.FAILSAFE = True
 
 
+def _get_user_config_path():
+    base_dir = os.getenv("APPDATA") or os.path.expanduser("~")
+    config_dir = os.path.join(base_dir, "ToolKit")
+    return os.path.join(config_dir, "config.json")
+
+
 class AutoClicker:
 
     # Default settings if config file does not exist
@@ -63,9 +69,10 @@ class AutoClicker:
         self.hotkey_binding = None
         self.hotkey_hook = None
         self.hotkey_is_down = False
+        self.is_recording_hotkey = False
 
-        # Path to config file (stored next to this script)
-        self.config_path = os.path.join(os.path.dirname(__file__), "config.json")
+        # Path to config file in a user-writable location
+        self.config_path = _get_user_config_path()
 
         # Load settings from file
         self.config = self.load_config()
@@ -149,7 +156,15 @@ class AutoClicker:
         if os.path.exists(self.config_path):
             try:
                 with open(self.config_path, "r") as f:
-                    return json.load(f)
+                    loaded = json.load(f)
+                    if not isinstance(loaded, dict):
+                        loaded = {}
+                    merged = self.DEFAULT_CONFIG.copy()
+                    merged.update(loaded)
+                    merged_section = self.DEFAULT_CONFIG["autoclicker"].copy()
+                    merged_section.update(merged.get("autoclicker", {}))
+                    merged["autoclicker"] = merged_section
+                    return merged
             except Exception:
                 pass
 
@@ -159,6 +174,7 @@ class AutoClicker:
     # Save current settings to file
     def save_config(self):
         try:
+            os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
             with open(self.config_path, "w") as f:
                 json.dump(self.config, f, indent=2)
         except Exception as e:
@@ -224,9 +240,13 @@ class AutoClicker:
             return False
 
     def _request_toggle(self):
+        if self.is_recording_hotkey:
+            return
         self._safe_after(self.toggle_clicking)
 
     def _handle_single_key_hotkey_event(self, event):
+        if self.is_recording_hotkey:
+            return
         if event.event_type == "down":
             if self.hotkey_is_down:
                 return
@@ -255,13 +275,20 @@ class AutoClicker:
         self.safe_remove_hotkey_binding()
         hotkey = self._normalize_hotkey(self.current_hotkey)
         self.current_hotkey = hotkey
-        if self._is_single_key_hotkey(hotkey):
-            self.hotkey_binding = keyboard.hook_key(hotkey, self._handle_single_key_hotkey_event)
-        else:
-            self.hotkey_binding = keyboard.add_hotkey(hotkey, self._request_toggle)
+        try:
+            if self._is_single_key_hotkey(hotkey):
+                self.hotkey_binding = keyboard.hook_key(hotkey, self._handle_single_key_hotkey_event)
+            else:
+                self.hotkey_binding = keyboard.add_hotkey(hotkey, self._request_toggle)
+        except Exception as e:
+            self.hotkey_binding = None
+            self.hotkey_is_down = False
+            self.status_label.config(text=f"Status: Hotkey error ({e})", foreground="red")
 
     # Record a new hotkey from user input
     def record_hotkey(self):
+        self.is_recording_hotkey = True
+        self.safe_remove_hotkey_binding()
         self.record_label.config(text="Press a key...", foreground="blue")
         if self.hotkey_hook:
             keyboard.unhook(self.hotkey_hook)
@@ -272,6 +299,7 @@ class AutoClicker:
                 self.current_hotkey = event.name
                 self.update_hotkey_display()
                 self.bind_hotkey()
+                self.is_recording_hotkey = False
 
                 # Save new hotkey
                 self.config["autoclicker"]["hotkey"] = self.current_hotkey
@@ -282,7 +310,14 @@ class AutoClicker:
                     keyboard.unhook(self.hotkey_hook)
                     self.hotkey_hook = None
 
-        self.hotkey_hook = keyboard.hook(on_key)
+        try:
+            self.hotkey_hook = keyboard.hook(on_key)
+        except Exception as e:
+            self.is_recording_hotkey = False
+            self.bind_hotkey()
+            self.hotkey_hook = None
+            self.record_label.config(text="")
+            self.status_label.config(text=f"Status: Hotkey record error ({e})", foreground="red")
 
     # Reset hotkey back to default
     def reset_hotkey(self):
