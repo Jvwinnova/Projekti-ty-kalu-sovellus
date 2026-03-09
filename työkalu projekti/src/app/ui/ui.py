@@ -1,5 +1,8 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+import subprocess
+import sys
+import os
 from src.app.tools.autoclicker import AutoClicker
 from src.app.tools.colourseekingcursor import ColourSeekingCursor
 
@@ -26,6 +29,11 @@ def create_ui(root):
                              command=open_colourseekingcursor_window)
     colour_btn.pack(pady=10, padx=20, fill=tk.X)
 
+    # Pong button
+    pong_btn = ttk.Button(main_frame, text="Pong",
+                           command=open_pong_window)
+    pong_btn.pack(pady=10, padx=20, fill=tk.X)
+
 
     return main_frame
 
@@ -40,4 +48,18 @@ def open_colourseekingcursor_window():
     """Open ColourSeekingCursor in a new window"""
     colourseekingcursor_window = tk.Toplevel()
     ColourSeekingCursor(colourseekingcursor_window)
+
+
+def open_pong_window():
+    """Launch Pong as a separate process."""
+    try:
+        project_root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        )
+        subprocess.Popen(
+            [sys.executable, "-m", "src.app.tools.pong"],
+            cwd=project_root,
+        )
+    except Exception as e:
+        messagebox.showerror("Pong", f"Failed to launch Pong:\n{e}")
 

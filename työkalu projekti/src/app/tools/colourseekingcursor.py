@@ -32,7 +32,7 @@ def _get_user_config_path():
 
 
 class ColourSeekingCursor:
-    """A GUI app that jumps the mouse to the center of a nearby matching color cluster."""
+    """An app that jumps the mouse to the center of a nearby matching color cluster."""
 
     CONFIG_SECTION = "colourseekingcursor"
     SAMPLE_STEP = 5          # Step size when scanning pixels (higher = faster, less accurate)
