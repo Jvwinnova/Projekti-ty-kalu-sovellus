@@ -112,7 +112,7 @@ class ColourSeekingCursor:
         ttk.Label(self.root, text="Colour Seeking Cursor",
                   font=("Segoe UI", 13, "bold")).pack(pady=10)
         ttk.Label(self.root, text="Jumps the mouse to a selected color on the screen closest to the cursor").pack(pady=5)
-        ttk.Label(self.root, text="not recommended to use without a shortcut key").pack(pady=5)
+        ttk.Label(self.root, text="not recommended to use without a shortcut key (controls your mouse)").pack(pady=5)
 
         self._build_color_controls()
         self._build_tolerance_control()
@@ -785,7 +785,7 @@ class ColourSeekingCursor:
         except Exception:
             value = 1
         self.cluster_size_label_var.set(
-            f"Minimum Cluster Size (ignore tiny blobs): {value}"
+            f"Minimum Cluster Size (higher the more demanding): {value}"
         )
 
     def add_color_combination(self):

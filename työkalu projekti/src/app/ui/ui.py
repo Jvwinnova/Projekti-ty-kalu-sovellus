@@ -25,7 +25,8 @@ def create_ui(root):
     colour_btn = ttk.Button(main_frame, text="Colour Seeking Cursor", 
                              command=open_colourseekingcursor_window)
     colour_btn.pack(pady=10, padx=20, fill=tk.X)
-    
+
+
     return main_frame
 
 
