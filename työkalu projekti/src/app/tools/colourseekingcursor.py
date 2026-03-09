@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, colorchooser
 import pyautogui
 import math
 import time
@@ -10,15 +10,22 @@ import os
 import ctypes
 from ctypes import wintypes
 from PIL import ImageGrab
+try:
+    from tkcolorpicker import askcolor as wheel_askcolor
+except Exception:
+    wheel_askcolor = None
 
 try:
     from src.app.window_icon import apply_app_icon
 except ModuleNotFoundError:
     def apply_app_icon(window):
+        """Fallback when icon helper is unavailable; do nothing."""
         return
 
 
 def _get_user_config_path():
+    """Return per-user config file path for this app."""
+    # Store config in AppData so settings persist between app launches.
     base_dir = os.getenv("APPDATA") or os.path.expanduser("~")
     config_dir = os.path.join(base_dir, "ToolKit")
     return os.path.join(config_dir, "config.json")
@@ -29,7 +36,7 @@ class ColourSeekingCursor:
 
     CONFIG_SECTION = "colourseekingcursor"
     SAMPLE_STEP = 5          # Step size when scanning pixels (higher = faster, less accurate)
-    LOOP_DELAY = 0.01         # Delay between each seek iteration
+    LOOP_DELAY = 0.0001         # Delay between each seek iteration
     TOGGLE_DEBOUNCE = 0.2    # Ignore repeated hotkey events fired too quickly
     STOP_JOIN_TIMEOUT = 0.5
     Strength = " "
@@ -38,14 +45,20 @@ class ColourSeekingCursor:
         "colors": [
             {"r": 0, "g": 0, "b": 0}
         ],
-        "tolerance": 100
+        "tolerance": 100,
+        "min_cluster_size": 3
     }
 
     def __init__(self, root: tk.Tk):
+        """Initialize state, load settings, build UI, and bind hotkeys."""
         self.root = root
         self.root.title("Colour Seeking Cursor")
-        self.root.geometry("620x550")
+        self.root.geometry("650x600")
         self.root.resizable(True, True)
+        # Make cursor warps immediate with no implicit PyAutoGUI delays.
+        pyautogui.PAUSE = 0
+        pyautogui.MINIMUM_DURATION = 0
+        pyautogui.MINIMUM_SLEEP = 0
         apply_app_icon(self.root)
         self._setup_fullscreen_controls()
 
@@ -68,6 +81,7 @@ class ColourSeekingCursor:
 
         self.config_path = _get_user_config_path()
         self.config = self.load_config()
+        # `self.settings` points to this tool's section inside the shared config file.
         self.settings = self.config.setdefault(
             self.CONFIG_SECTION, self.DEFAULT_CONFIG.copy()
         )
@@ -85,13 +99,16 @@ class ColourSeekingCursor:
         self.root.bind("<Destroy>", self._on_root_destroy, add="+")
 
     def _setup_fullscreen_controls(self):
+        """Bind keyboard shortcuts related to window mode."""
         self.root.bind("<F11>", lambda event: self.toggle_fullscreen(), add="+")
 
     def toggle_fullscreen(self):
+        """Toggle Tk fullscreen attribute on/off."""
         self.root.attributes("-fullscreen", not bool(self.root.attributes("-fullscreen")))
 
     # ------------------------ UI ------------------------
     def _build_ui(self):
+        """Build all UI sections in display order."""
         ttk.Label(self.root, text="Colour Seeking Cursor",
                   font=("Segoe UI", 13, "bold")).pack(pady=10)
         ttk.Label(self.root, text="Jumps the mouse to a selected color on the screen closest to the cursor").pack(pady=5)
@@ -99,24 +116,31 @@ class ColourSeekingCursor:
 
         self._build_color_controls()
         self._build_tolerance_control()
+        self._build_cluster_size_control()
         self._build_buttons()
         self._build_status()
         self._build_hotkey_section()
         
     def _build_color_controls(self):
+        """Build color list, color action buttons, and RGB editors."""
         ttk.Label(self.root, text="Tracked Colours (RGB)").pack(pady=5)
 
         list_frame = ttk.Frame(self.root)
         list_frame.pack(padx=20, pady=(5, 0), fill=tk.BOTH)
 
-        self.color_listbox = tk.Listbox(list_frame, height=4, exportselection=False)
+        # Treeview lets us attach an image per row, so swatch color stays correct
+        # even when the row is selected.
+        self.color_listbox = ttk.Treeview(list_frame, show="tree", selectmode="browse", height=4)
         self.color_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.color_listbox.bind("<<ListboxSelect>>", self.on_color_select)
+        self.color_listbox.bind("<<TreeviewSelect>>", self.on_color_select)
+        # Keep references to PhotoImage objects to prevent garbage collection.
+        self.color_swatch_images = []
 
         controls = ttk.Frame(list_frame)
         controls.pack(side=tk.LEFT, padx=(8, 0), fill=tk.Y)
         ttk.Button(controls, text="Add", command=self.add_color_combination).pack(fill=tk.X, pady=2)
         ttk.Button(controls, text="Delete", command=self.delete_color_combination).pack(fill=tk.X, pady=2)
+        ttk.Button(controls, text="Pick From Wheel", command=self.pick_color_from_wheel).pack(fill=tk.X, pady=2)
         ttk.Button(controls, text="Pick From Screen", command=self.pick_color_from_screen).pack(fill=tk.X, pady=2)
 
         frame = ttk.Frame(self.root)
@@ -131,12 +155,16 @@ class ColourSeekingCursor:
             ttk.Label(frame, text=f"{label}:").pack(side=tk.LEFT, padx=5)
             ttk.Spinbox(frame, from_=0, to=255, width=5, textvariable=var).pack(side=tk.LEFT, padx=5)
 
+        # `trace_add("write", ...)` means "call this function whenever the variable changes".
+        # This catches both user edits and code-driven `.set(...)` updates.
         self.r_var.trace_add("write", self.on_color_value_changed)
         self.g_var.trace_add("write", self.on_color_value_changed)
         self.b_var.trace_add("write", self.on_color_value_changed)
         self._refresh_color_listbox()
 
     def _build_tolerance_control(self):
+        """Build slider that controls color match tolerance."""
+        # Tolerance controls how far a screen pixel can be from a target color and still count as a match.
         self.tolerance_label_var = tk.StringVar()
         ttk.Label(self.root, textvariable=self.tolerance_label_var).pack(pady=5)
         self.tolerance_var = tk.DoubleVar(value=self.settings.get("tolerance", 100))
@@ -146,17 +174,32 @@ class ColourSeekingCursor:
             self.root, from_=10, to=255, orient=tk.HORIZONTAL, variable=self.tolerance_var
         ).pack(padx=20, fill=tk.X)
 
+    def _build_cluster_size_control(self):
+        """Build slider that ignores clusters smaller than a threshold."""
+        # Ignore tiny color blobs to reduce jumps to noise/single pixels.
+        self.cluster_size_label_var = tk.StringVar()
+        ttk.Label(self.root, textvariable=self.cluster_size_label_var).pack(pady=5)
+        self.min_cluster_size_var = tk.DoubleVar(value=self.settings.get("min_cluster_size", 3))
+        self.min_cluster_size_var.trace_add("write", self.on_min_cluster_size_changed)
+        self._update_min_cluster_size_label()
+        ttk.Scale(
+            self.root, from_=1, to=100, orient=tk.HORIZONTAL, variable=self.min_cluster_size_var
+        ).pack(padx=20, fill=tk.X)
+
     def _build_buttons(self):
+        """Build Start/Stop controls for the seeking worker."""
         frame = ttk.Frame(self.root)
         frame.pack(pady=15, padx=20, fill=tk.X)
         ttk.Button(frame, text="Start", command=self.start_seeking).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=5)
         ttk.Button(frame, text="Stop", command=self.stop_seeking).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=5)
 
     def _build_status(self):
+        """Build status label shown during runtime."""
         self.status_label = ttk.Label(self.root, text="Status: Stopped", foreground="red")
         self.status_label.pack(pady=10)
 
     def _build_hotkey_section(self):
+        """Build hotkey display and hotkey configuration buttons."""
         ttk.Separator(self.root).pack(fill=tk.X, padx=10, pady=10)
         ttk.Label(self.root, text="Hotkey Settings", font=("Segoe UI", 10, "bold")).pack(pady=5)
         frame = ttk.Frame(self.root)
@@ -173,6 +216,7 @@ class ColourSeekingCursor:
 
     # ------------------------ Config ------------------------
     def load_config(self) -> dict:
+        """Load app config JSON from disk; return empty dict on failure."""
         if not os.path.exists(self.config_path):
             return {}
         try:
@@ -182,12 +226,14 @@ class ColourSeekingCursor:
             return {}
 
     def _normalize_color_component(self, value, fallback=0):
+        """Convert a value to RGB component range 0..255."""
         try:
             return max(0, min(255, int(value)))
         except Exception:
             return fallback
 
     def _normalize_color_list(self, settings):
+        """Read color list from settings and normalize each RGB component."""
         raw = settings.get("colors")
         colors = []
         if isinstance(raw, list):
@@ -210,6 +256,7 @@ class ColourSeekingCursor:
         return colors
 
     def save_config(self):
+        """Write full config dictionary to disk."""
         try:
             os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
             with open(self.config_path, "w", encoding="utf-8") as f:
@@ -219,6 +266,7 @@ class ColourSeekingCursor:
 
     # ------------------------ Seeking ------------------------
     def start_seeking(self):
+        """Start background scanning thread if not already running."""
         if self.is_closing:
             return
         with self.state_lock:
@@ -226,12 +274,14 @@ class ColourSeekingCursor:
                 return
             self.is_running = True
             self.stop_event.clear()
+            # Background thread keeps UI responsive while we scan pixels continuously.
             worker = threading.Thread(target=self.seeking_loop, daemon=True)
             self.worker_thread = worker
         self._set_runtime_status("Status: Seeking", "green")
         worker.start()
 
     def stop_seeking(self, update_status: bool = True):
+        """Signal worker to stop and optionally update UI status."""
         with self.state_lock:
             self.is_running = False
             self.stop_event.set()
@@ -243,6 +293,7 @@ class ColourSeekingCursor:
             self._set_status("Status: Stopped", "red")
 
     def seeking_loop(self):
+        """Worker loop: repeatedly execute seek steps until stopped."""
         try:
             while not self.stop_event.is_set():
                 try:
@@ -261,12 +312,13 @@ class ColourSeekingCursor:
                 self.is_running = False
 
     def _seek_step(self):
-        """Warp the cursor to the center of the nearest matching color cluster."""
+        """Capture area, find color clusters, then move mouse to nearest valid cluster."""
         if self.stop_event.is_set() or not self.is_running or self.is_closing:
             return
 
         targets = [(c["r"], c["g"], c["b"]) for c in self.colors]
         tolerance = self.tolerance_var.get()
+        min_cluster_size = max(1, int(round(float(self.min_cluster_size_var.get()))))
 
         cx, cy = pyautogui.position()
         virtual_bounds = self._get_virtual_screen_bounds()
@@ -294,6 +346,7 @@ class ColourSeekingCursor:
         if not x_samples or not y_samples:
             return
 
+        # 2D grid of True/False where True means this sampled point is close enough to target color.
         match_mask = [[False] * len(x_samples) for _ in range(len(y_samples))]
 
         for gy, y in enumerate(y_samples):
@@ -320,10 +373,21 @@ class ColourSeekingCursor:
             return
 
         if clusters:
+            # Filter out tiny clusters first; they are usually noise.
+            eligible_clusters = [cluster for cluster in clusters if cluster[2] >= min_cluster_size]
+            if not eligible_clusters:
+                self._set_runtime_status(
+                    f"Status: found density not bigger than {min_cluster_size}",
+                    "orange"
+                )
+                return
+
             center_x, center_y, cluster_size = min(
-                clusters,
+                eligible_clusters,
+                # Pick the cluster center closest to current mouse position.
                 key=lambda cluster: math.hypot(cluster[0] - cx, cluster[1] - cy)
             )
+            
             if cluster_size < 3:
                 self.Strength = "Negligible"
             elif cluster_size < 30:
@@ -340,10 +404,17 @@ class ColourSeekingCursor:
                 self.Strength = "Very High"
             elif cluster_size < 5000:
                 self.Strength = "Ultra High"
-            else:
+            elif cluster_size < 7500:
                 self.Strength = "Extremely High"
+            elif cluster_size < 10000:
+                self.Strength = "Extremely High+"
+            elif cluster_size < 30000:
+                self.Strength = "Extremely High+"
+            else:
+                self.Strength = "Extremely High+++"
                         
             
+            # Instant jump directly to the chosen cluster center.
             pyautogui.moveTo(center_x, center_y)
             self._set_runtime_status(
                 f"Status: Seeking (pixel density: {cluster_size}  {self.Strength})",
@@ -353,20 +424,21 @@ class ColourSeekingCursor:
             self._set_runtime_status("Status: No match found", "orange")
 
     def _find_color_clusters(self, match_mask, x_samples, y_samples, win_left, win_top):
-        """Find connected matching-pixel clusters and return their centers in screen coords."""
+        """Find connected groups in the match grid and return each group's center."""
         clusters = []
         grid_h = len(match_mask)
         grid_w = len(match_mask[0]) if grid_h else 0
         if grid_w == 0:
             return clusters
 
+        # Standard flood-fill (DFS) bookkeeping so each cell is processed once.
         visited = [[False] * grid_w for _ in range(grid_h)]
         neighbors = (
             (-1, -1), (0, -1), (1, -1),
             (-1, 0),            (1, 0),
             (-1, 1),  (0, 1),   (1, 1),
         )
-
+        
         for gy in range(grid_h):
             if self.stop_event.is_set() or not self.is_running or self.is_closing:
                 return []
@@ -383,6 +455,7 @@ class ColourSeekingCursor:
                 while stack:
                     cx, cy = stack.pop()
                     pixel_count += 1
+                    # Convert sample-grid coordinates back to real screen coordinates.
                     sum_x += win_left + x_samples[cx]
                     sum_y += win_top + y_samples[cy]
 
@@ -397,6 +470,7 @@ class ColourSeekingCursor:
                         stack.append((nx, ny))
 
                 if pixel_count > 0:
+                    # Cluster center is the average of all points in this connected component.
                     clusters.append((
                         int(round(sum_x / pixel_count)),
                         int(round(sum_y / pixel_count)),
@@ -406,6 +480,7 @@ class ColourSeekingCursor:
         return clusters
 
     def _init_win32_apis(self):
+        """Prepare Win32 function signatures used for cursor/window queries."""
         self.user32 = ctypes.windll.user32
         self.user32.GetCursorPos.argtypes = [ctypes.POINTER(wintypes.POINT)]
         self.user32.GetCursorPos.restype = wintypes.BOOL
@@ -417,6 +492,7 @@ class ColourSeekingCursor:
         self.user32.GetWindowRect.restype = wintypes.BOOL
 
     def _get_virtual_screen_bounds(self):
+        """Return full virtual desktop bounds across all monitors."""
         SM_XVIRTUALSCREEN = 76
         SM_YVIRTUALSCREEN = 77
         SM_CXVIRTUALSCREEN = 78
@@ -430,6 +506,7 @@ class ColourSeekingCursor:
         return left, top, right, bottom
 
     def _clip_window_bounds(self, rect: wintypes.RECT, virtual_bounds):
+        """Clamp a window rect so it stays inside virtual screen bounds."""
         v_left, v_top, v_right, v_bottom = virtual_bounds
         left = max(v_left, min(v_right, rect.left))
         top = max(v_top, min(v_bottom, rect.top))
@@ -468,6 +545,7 @@ class ColourSeekingCursor:
 
     # ------------------------ Hotkeys ------------------------
     def _normalize_hotkey(self, hotkey: str) -> str:
+        """Normalize hotkey text to a safe lowercase format."""
         if not hotkey:
             return self.DEFAULT_CONFIG["hotkey"]
         normalized = str(hotkey).strip().lower()
@@ -476,9 +554,11 @@ class ColourSeekingCursor:
         return normalized or self.DEFAULT_CONFIG["hotkey"]
 
     def _is_single_key_hotkey(self, hotkey: str) -> bool:
+        """Return True if hotkey is a single key (no combo separators)."""
         return "+" not in hotkey and "," not in hotkey
 
     def _handle_single_key_hotkey_event(self, event):
+        """Handle press/release events for single-key hotkey mode."""
         if self.is_closing or self.is_recording_hotkey:
             return
         if event.event_type == "down":
@@ -490,6 +570,7 @@ class ColourSeekingCursor:
             self.hotkey_is_down = False
 
     def bind_hotkey(self):
+        """Bind current hotkey via keyboard library."""
         if self.is_closing:
             return
         self._safe_remove_hotkey_binding()
@@ -499,15 +580,18 @@ class ColourSeekingCursor:
         self.settings["hotkey"] = hotkey
 
         try:
+            # `hook_key` supports key-down and key-up events for debounced single-key toggles.
             if self._is_single_key_hotkey(hotkey):
                 self.hotkey_binding = keyboard.hook_key(hotkey, self._handle_single_key_hotkey_event)
             else:
+                # For combos (e.g. ctrl+alt+k), a simple callback binding is enough.
                 self.hotkey_binding = keyboard.add_hotkey(hotkey, self.toggle_seeking)
         except Exception as e:
             if not self.is_closing:
                 self._set_status(f"Status: Hotkey error ({e})", "red")
 
     def toggle_seeking(self):
+        """Toggle start/stop state with debounce protection."""
         if self.is_closing or self.is_recording_hotkey:
             return
         now = time.monotonic()
@@ -517,6 +601,7 @@ class ColourSeekingCursor:
         self._safe_after(self._toggle_seeking_main_thread)
 
     def _toggle_seeking_main_thread(self):
+        """Execute start/stop toggle on Tk main thread."""
         if self.is_closing:
             return
         if self.is_running:
@@ -525,6 +610,7 @@ class ColourSeekingCursor:
             self.start_seeking()
 
     def record_hotkey(self):
+        """Capture next pressed key and store it as the new hotkey."""
         if self.is_closing:
             return
         self.is_recording_hotkey = True
@@ -533,6 +619,7 @@ class ColourSeekingCursor:
         self._safe_remove_hotkey_hook()
 
         def on_key(event):
+            # Keyboard callbacks happen outside Tk thread; apply changes through `_safe_after`.
             if event.event_type != "down" or self.is_closing:
                 return
             captured_hotkey = self._normalize_hotkey(event.name)
@@ -558,6 +645,7 @@ class ColourSeekingCursor:
             self._set_status(f"Status: Hotkey record error ({e})", "red")
 
     def reset_hotkey(self):
+        """Reset hotkey to built-in default."""
         if self.is_closing:
             return
         self.current_hotkey = self.DEFAULT_CONFIG["hotkey"]
@@ -566,6 +654,7 @@ class ColourSeekingCursor:
         self.save_settings()
 
     def update_hotkey_display(self):
+        """Refresh read-only entry to show current hotkey text."""
         try:
             self.hotkey_display.config(state="normal")
             self.hotkey_display.delete(0, tk.END)
@@ -576,6 +665,7 @@ class ColourSeekingCursor:
 
     # ------------------------ Status ------------------------
     def _set_status(self, text: str, color: str):
+        """Set status label text/color safely on Tk thread."""
         def apply():
             try:
                 self.status_label.config(text=text, foreground=color)
@@ -584,6 +674,7 @@ class ColourSeekingCursor:
         self._safe_after(apply)
 
     def _set_runtime_status(self, text: str, color: str):
+        """Set status during runtime, unless app is stopping/closing."""
         if self.stop_event.is_set() or self.is_closing:
             return
 
@@ -598,23 +689,42 @@ class ColourSeekingCursor:
         self._safe_after(apply)
 
     # ------------------------ Colour List ------------------------
+    def _rgb_to_hex(self, r: int, g: int, b: int) -> str:
+        """Convert RGB integers to '#RRGGBB' string."""
+        return f"#{r:02x}{g:02x}{b:02x}"
+
+    def _make_color_swatch(self, r: int, g: int, b: int) -> tk.PhotoImage:
+        # Solid square image used in Treeview rows as the color icon.
+        image = tk.PhotoImage(width=12, height=12)
+        image.put(self._rgb_to_hex(r, g, b), to=(0, 0, 12, 12))
+        return image
+
     def _refresh_color_listbox(self):
-        self.color_listbox.delete(0, tk.END)
-        for color in self.colors:
-            self.color_listbox.insert(tk.END, f'RGB({color["r"]}, {color["g"]}, {color["b"]})')
+        """Rebuild color rows, keep selection valid, and sync RGB inputs."""
+        self.color_listbox.delete(*self.color_listbox.get_children())
+        self.color_swatch_images = []
+        for index, color in enumerate(self.colors):
+            swatch = self._make_color_swatch(color["r"], color["g"], color["b"])
+            self.color_swatch_images.append(swatch)
+            row_text = f'RGB({color["r"]}, {color["g"]}, {color["b"]})'
+            self.color_listbox.insert("", "end", iid=str(index), text=row_text, image=swatch)
 
         if self.selected_color_index >= len(self.colors):
-            self.selected_color_index = len(self.colors) - 1
+            self.selected_color_index: int = len(self.colors) - 1
         if self.selected_color_index < 0:
             self.selected_color_index = 0
-        self.color_listbox.selection_clear(0, tk.END)
-        self.color_listbox.selection_set(self.selected_color_index)
-        self.color_listbox.activate(self.selected_color_index)
+        selected_iid = str(self.selected_color_index)
+        self.color_listbox.selection_set(selected_iid)
+        self.color_listbox.focus(selected_iid)
+        self.color_listbox.see(selected_iid)
         self._load_selected_color_into_inputs()
 
     def _load_selected_color_into_inputs(self):
+        """Copy selected color from list into R/G/B Tk variables."""
         if not self.colors:
             return
+        # Guard flag prevents `trace_add` callbacks from treating these `.set(...)`
+        # calls as user edits and writing back immediately.
         self._updating_color_inputs = True
         selected = self.colors[self.selected_color_index]
         self.r_var.set(selected["r"])
@@ -623,13 +733,15 @@ class ColourSeekingCursor:
         self._updating_color_inputs = False
 
     def on_color_select(self, event=None):
-        selection = self.color_listbox.curselection()
+        """Handle list selection changes and load selected color to inputs."""
+        selection = self.color_listbox.selection()
         if not selection:
             return
-        self.selected_color_index = selection[0]
+        self.selected_color_index = int(selection[0])
         self._load_selected_color_into_inputs()
 
     def on_color_value_changed(self, *args):
+        """Persist RGB edits from spinboxes into selected color entry."""
         if self._updating_color_inputs or self.is_closing:
             return
         if not self.colors:
@@ -643,12 +755,21 @@ class ColourSeekingCursor:
         self.save_settings()
 
     def on_tolerance_changed(self, *args):
+        """Handle tolerance slider changes."""
         if self.is_closing:
             return
         self._update_tolerance_label()
         self.save_settings()
 
+    def on_min_cluster_size_changed(self, *args):
+        """Handle minimum-cluster slider changes."""
+        if self.is_closing:
+            return
+        self._update_min_cluster_size_label()
+        self.save_settings()
+
     def _update_tolerance_label(self):
+        """Refresh tolerance label text from slider value."""
         try:
             value = int(round(float(self.tolerance_var.get())))
         except Exception:
@@ -657,7 +778,18 @@ class ColourSeekingCursor:
             f"Color Tolerance (lower the more stricter): {value}"
         )
 
+    def _update_min_cluster_size_label(self):
+        """Refresh minimum cluster size label text from slider value."""
+        try:
+            value = max(1, int(round(float(self.min_cluster_size_var.get()))))
+        except Exception:
+            value = 1
+        self.cluster_size_label_var.set(
+            f"Minimum Cluster Size (ignore tiny blobs): {value}"
+        )
+
     def add_color_combination(self):
+        """Append a new color (copy of current) and select it."""
         if self.is_closing:
             return
         base = self.colors[self.selected_color_index] if self.colors else {"r": 255, "g": 0, "b": 0}
@@ -667,11 +799,12 @@ class ColourSeekingCursor:
         self.save_settings()
 
     def delete_color_combination(self):
+        """Delete selected color if more than one color remains."""
         if self.is_closing:
             return
         if len(self.colors) <= 1:
             messagebox.showwarning(
-                "Delete Colour",
+                "Warning",
                 "unable to delete colour (must have atleast one colour)"
             )
             return
@@ -681,7 +814,34 @@ class ColourSeekingCursor:
         self._refresh_color_listbox()
         self.save_settings()
 
+    def pick_color_from_wheel(self):
+        """Open color picker dialog and apply chosen color."""
+        if self.is_closing or not self.colors:
+            return
+
+        selected = self.colors[self.selected_color_index]
+        initial_hex = self._rgb_to_hex(selected["r"], selected["g"], selected["b"])
+
+        # Prefer tkcolorpicker's wheel, and fall back to Tk's chooser.
+        rgb = None
+        if wheel_askcolor is not None:
+            result = wheel_askcolor(color=initial_hex, parent=self.root, title="Pick colour")
+            if result and result[0] is not None:
+                rgb = result[0]
+        else:
+            result = colorchooser.askcolor(color=initial_hex, parent=self.root, title="Pick colour")
+            if result and result[0] is not None:
+                rgb = result[0]
+
+        if rgb is None:
+            # User canceled dialog.
+            return
+
+        r, g, b = [self._normalize_color_component(int(round(value))) for value in rgb]
+        self._apply_picked_color((r, g, b))
+
     def pick_color_from_screen(self):
+        """Temporarily hide app and pick color from next screen click."""
         if self.is_closing or self.color_pick_in_progress:
             return
 
@@ -696,16 +856,19 @@ class ColourSeekingCursor:
             self.color_pick_in_progress = False
             return
 
+        # Run click-wait logic in background so UI thread does not block.
         self.color_pick_thread = threading.Thread(target=self._pick_color_worker, daemon=True)
         self.color_pick_thread.start()
 
     def _pick_color_worker(self):
+        """Wait for left-click, sample pixel under cursor, then apply picked color."""
         try:
             VK_LBUTTON = 0x01
             was_down = False
             while not self.is_closing:
                 is_down = bool(self.user32.GetAsyncKeyState(VK_LBUTTON) & 0x8000)
                 if is_down and not was_down:
+                    # Detect edge: "just pressed now" (not held from previous loop).
                     point = wintypes.POINT()
                     if not self.user32.GetCursorPos(ctypes.byref(point)):
                         break
@@ -719,6 +882,7 @@ class ColourSeekingCursor:
             self._safe_after(self._finish_color_pick)
 
     def _sample_screen_pixel(self, screen_x: int, screen_y: int):
+        """Sample one screen pixel in virtual-desktop coordinate space."""
         try:
             v_left, v_top, _, _ = self._get_virtual_screen_bounds()
             image = ImageGrab.grab(all_screens=True)
@@ -732,6 +896,7 @@ class ColourSeekingCursor:
             return None
 
     def _apply_picked_color(self, rgb):
+        """Write picked RGB value into currently selected color."""
         if self.is_closing or not self.colors:
             return
         r, g, b = rgb
@@ -739,26 +904,37 @@ class ColourSeekingCursor:
         self._refresh_color_listbox()
         self.save_settings()
         self._set_status("Status: Colour picked", "green")
+        self.root.after(3100, lambda: self._set_status("Status: Stopped", "red") if not self.is_running else None)
+        
 
     def _finish_color_pick(self):
+        """Restore app window state after screen-pick workflow ends."""
         self.color_pick_in_progress = False
+        
         if self.is_closing:
             return
         try:
             self.root.deiconify()
             self.root.lift()
             self.root.focus_force()
+            
         except tk.TclError:
             pass
 
     def _safe_after(self, callback):
+        # Tk widgets must be touched from the main Tk thread.
+        # This schedules `callback` safely on that thread.
         try:
             self.root.after(0, callback)
             return True
+        
         except tk.TclError:
             return False
-
+        
+    
+        
     def _safe_remove_hotkey_binding(self):
+        """Best-effort removal of active hotkey binding object."""
         if not self.hotkey_binding:
             return
         try:
@@ -773,6 +949,7 @@ class ColourSeekingCursor:
             self.hotkey_is_down = False
 
     def _safe_remove_hotkey_hook(self):
+        """Best-effort removal of keyboard hook used during hotkey recording."""
         if not self.hotkey_hook:
             return
         try:
@@ -783,21 +960,27 @@ class ColourSeekingCursor:
             self.hotkey_hook = None
 
     def _update_settings_from_ui(self):
+        """Copy current UI values into in-memory settings dictionary."""
+        # Copy live UI state into the config dict that is written to disk.
         self.settings.update(
             hotkey=self._normalize_hotkey(self.current_hotkey),
             colors=[dict(color) for color in self.colors],
-            tolerance=self.tolerance_var.get()
+            tolerance=self.tolerance_var.get(),
+            min_cluster_size=max(1, int(round(float(self.min_cluster_size_var.get()))))
         )
 
     # ------------------------ Save / Close ------------------------
     def save_settings(self):
+        """Update settings from UI and persist them to disk."""
         try:
             self._update_settings_from_ui()
+            
         except tk.TclError:
             return
         self.save_config()
 
     def _cleanup(self, persist_settings: bool):
+        """One-time shutdown sequence for worker threads and hotkeys."""
         if self.cleanup_done:
             return
         self.cleanup_done = True
@@ -809,10 +992,12 @@ class ColourSeekingCursor:
             self.save_settings()
 
     def _on_root_destroy(self, event):
+        """Handle Tk destroy event to clean up resources safely."""
         if event.widget is self.root:
             self._cleanup(persist_settings=False)
 
     def on_window_close(self):
+        """Handle window close button and persist settings."""
         self._cleanup(persist_settings=True)
         try:
             self.root.destroy()
