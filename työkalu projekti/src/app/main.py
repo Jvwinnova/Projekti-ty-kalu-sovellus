@@ -15,7 +15,7 @@ def main():
     
     root = tk.Tk()
     root.title("Tool Kit")
-    root.geometry("350x300")
+    root.geometry("380x320")
     apply_app_icon(root)
     
     # Create menu bar

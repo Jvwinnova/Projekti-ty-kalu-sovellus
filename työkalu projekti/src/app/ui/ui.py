@@ -28,7 +28,9 @@ def create_ui(root):
     colour_btn = ttk.Button(main_frame, text="Colour Seeking Cursor", 
                              command=open_colourseekingcursor_window)
     colour_btn.pack(pady=10, padx=20, fill=tk.X)
-
+    #minigame section title
+    title_label = ttk.Label(main_frame, text="Mini games", font=("Arial", 12, "bold"))
+    title_label.pack(pady=20)
     # Pong button
     pong_btn = ttk.Button(main_frame, text="Pong",
                            command=open_pong_window)
