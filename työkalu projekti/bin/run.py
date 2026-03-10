@@ -7,4 +7,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 from src.app.main import main
 
 if __name__ == "__main__":
-    main()
+    if "--pong" in sys.argv:
+        from src.app.tools import pong
+        pong.main()
+        try:
+            pong.pygame.quit()
+        except Exception:
+            pass
+    else:
+        main()

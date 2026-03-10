@@ -14,7 +14,7 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
-
+PURPLE = (128, 0, 128)
 # Basic parameters of the screen
 WIDTH, HEIGHT = 900, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -330,9 +330,9 @@ def main():
         ball.display()
 
         # Displaying the scores of the players
-        geek1.displayScore("Player 1 : ", 
+        geek1.displayScore("Player 1 Score: ", 
                            geek1Score, 100, 20, BLUE)
-        geek2.displayScore("Player 2 : ", 
+        geek2.displayScore("Player 2 Score: ", 
                            geek2Score, WIDTH-100, 20, RED)
 
         pygame.display.update()
