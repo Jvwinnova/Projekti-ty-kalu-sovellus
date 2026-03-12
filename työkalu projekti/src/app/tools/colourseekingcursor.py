@@ -43,7 +43,7 @@ class ColourSeekingCursor:
     DEFAULT_CONFIG = {
         "hotkey": "f3",
         "colors": [
-            {"r": 0, "g": 0, "b": 0}
+            {"r": 255, "g": 0, "b": 0}
         ],
         "tolerance": 100,
         "min_cluster_size": 3

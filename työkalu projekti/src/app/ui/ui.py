@@ -6,6 +6,7 @@ import os
 from src.app.tools.autoclicker import AutoClicker
 from src.app.tools.colourseekingcursor import ColourSeekingCursor
 from src.app.tools.Multiplyby2 import multiplyby2
+from src.app.tools.stopwatch import Stopwatch
 
 
 def create_ui(root):
@@ -39,6 +40,14 @@ def create_ui(root):
         command=open_colourseekingcursor_window,
         info_title="Colour Seeking Cursor",
         info_text="Moves the cursor toward a target color on screen.",
+    )
+
+    _add_tool_row(
+        main_frame,
+        label="Stopwatch",
+        command=open_stopwatch_window,
+        info_title="Stop watch",
+        info_text="Simple stopwatch with start, stop, and reset.",
     )
 
     # Section title for tools that are less important.
@@ -101,6 +110,12 @@ def open_colourseekingcursor_window():
     # Each tool opens in its own top-level window.
     colourseekingcursor_window = tk.Toplevel()
     ColourSeekingCursor(colourseekingcursor_window)
+
+def open_stopwatch_window():
+    """Open Stopwatch in a new window"""
+    # Each tool opens in its own top-level window.
+    stopwatch_window = tk.Toplevel()
+    Stopwatch(stopwatch_window)
 
 def open_multiplyby2_window():
     """Open multiplyby2 in a new window"""
