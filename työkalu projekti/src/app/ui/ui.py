@@ -7,7 +7,7 @@ from src.app.tools.autoclicker import AutoClicker
 from src.app.tools.colourseekingcursor import ColourSeekingCursor
 from src.app.tools.Multiplyby2 import multiplyby2
 from src.app.tools.stopwatch import Stopwatch
-
+from src.app.tools.numberguesser import NumberGuesser
 
 def create_ui(root):
     """Create the main UI with tabs for different tools"""
@@ -75,7 +75,14 @@ def create_ui(root):
             "the ball and score against your opponent."
         ),
     )
-
+    
+    _add_tool_row(
+        main_frame,
+        label="number guesser",
+        command=open_number_guesser_window,
+        info_title="Number Guesser",
+        info_text="Guess the secret number within a limited number of attempts.",
+    )
     return main_frame
 
 
@@ -104,6 +111,11 @@ def open_autoclicker_window():
     autoclicker_window = tk.Toplevel()
     AutoClicker(autoclicker_window)
 
+def open_number_guesser_window():
+    """Open Number Guesser in a new window"""
+    # Each tool opens in its own top-level window.
+    number_guesser_window = tk.Toplevel()
+    NumberGuesser(number_guesser_window)
 
 def open_colourseekingcursor_window():
     """Open ColourSeekingCursor in a new window"""
