@@ -1,0 +1,6 @@
+pyautogui
+keyboard
+pillow
+requests
+pygame
+tkcolorpicker

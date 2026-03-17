@@ -8,6 +8,8 @@ from src.app.tools.colourseekingcursor import ColourSeekingCursor
 from src.app.tools.Multiplyby2 import multiplyby2
 from src.app.tools.stopwatch import Stopwatch
 from src.app.tools.numberguesser import NumberGuesser
+from src.app.tools.pwned import PwnedPasswordChecker
+
 
 def create_ui(root):
     """Create the main UI with tabs for different tools"""
@@ -49,11 +51,18 @@ def create_ui(root):
         info_title="Stop watch",
         info_text="Simple stopwatch with start, stop, and reset.",
     )
+    
 
     # Section title for tools that are less important.
     title_label = ttk.Label(main_frame, text="Irrelevant tools", font=("Arial", 12, "bold"))
     title_label.pack(pady=20)
-
+    _add_tool_row(
+        main_frame,
+        label="Pwned Passwords",
+        command=open_pwned_passwords_window,
+        info_title="Pwned Passwords",
+        info_text="Checks if a password appears in known data breaches.",
+    )
     _add_tool_row(
         main_frame,
         label="Multiply by 2",
@@ -106,6 +115,7 @@ def _add_tool_row(parent, label, command, info_title, info_text):
 
 
 def open_autoclicker_window():
+    
     """Open AutoClicker in a new window"""
     # Each tool opens in its own top-level window.
     autoclicker_window = tk.Toplevel()
@@ -128,6 +138,11 @@ def open_stopwatch_window():
     # Each tool opens in its own top-level window.
     stopwatch_window = tk.Toplevel()
     Stopwatch(stopwatch_window)
+
+def open_pwned_passwords_window():
+    """Open Pwned Passwords in a new window"""
+    pwned_window = tk.Toplevel()
+    PwnedPasswordChecker(pwned_window)
 
 def open_multiplyby2_window():
     """Open multiplyby2 in a new window"""

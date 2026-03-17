@@ -1,16 +1,38 @@
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
 
-project_root = Path(SPECPATH).resolve().parent
-repo_root = project_root.parent
-icon_file = repo_root / 'assets' / 'app.ico'
+
+def _find_project_root(start: Path) -> Path:
+    for candidate in [start, *start.parents]:
+        if (candidate / "src").is_dir() and (candidate / "bin").is_dir():
+            return candidate
+    return start
+
+
+spec_dir = Path(SPECPATH).resolve()
+project_root = _find_project_root(spec_dir)
+icon_file = project_root / "assets" / "app.ico"
+icon_path = icon_file if icon_file.exists() else None
 
 a = Analysis(
-    ['run.py'],
+    [str(project_root / "bin" / "run.py")],
     pathex=[str(project_root)],
     binaries=[],
-    datas=[(str(icon_file), 'assets')],
-    hiddenimports=[],
+    datas=[(str(icon_file), "assets")] if icon_path else [],
+    hiddenimports=[
+        "pygame",
+        "requests",
+        "pyautogui",
+        "pyscreeze",
+        "pymsgbox",
+        "pytweening",
+        "mouseinfo",
+        "pygetwindow",
+        "pyperclip",
+        "keyboard",
+        "PIL",
+        "PIL.Image",
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -39,5 +61,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=[str(icon_file)],
+    icon=[str(icon_path)] if icon_path else None,
 )

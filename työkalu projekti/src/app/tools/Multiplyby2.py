@@ -22,7 +22,8 @@ class multiplyby2:
 
     DEFAULT_CONFIG = {
         "Multiply by 2": {
-            "number": 1
+            "number": 1,
+            "multipliedtimes": 0
         }
     }
 
@@ -40,7 +41,12 @@ class multiplyby2:
             self.config["Multiply by 2"]["number"],
             fallback=self.DEFAULT_CONFIG["Multiply by 2"]["number"],
         )
+        self.multipliedtimes = self._normalize_number(
+            self.config["Multiply by 2"]["multipliedtimes"],
+            fallback=self.DEFAULT_CONFIG["Multiply by 2"]["multipliedtimes"],
+        )
         self.status_var = tk.StringVar(value=f"Number: {self.number}")
+        self.multipliedtimes_status = tk.StringVar(value=f"multiplied {self.multipliedtimes} times")
         self._build_ui()
         self.root.protocol("WM_DELETE_WINDOW", self.on_window_close)
 
@@ -60,6 +66,8 @@ class multiplyby2:
             text="Multiply by 2",
             wraplength=480,
         ).pack(pady=(0, 12))
+        
+        
 
         actions = ttk.Frame(container)
         actions.pack(fill=tk.X, pady=(0, 10))
@@ -73,18 +81,30 @@ class multiplyby2:
             wraplength=480,
             justify="left",
         )
-        self.status_label.pack(anchor="w", pady=(0, 160), fill=tk.X)
+        self.multipliedtimes_label = ttk.Label(
+            container,
+            textvariable=self.multipliedtimes_status,
+            wraplength=480,
+            justify="left",
+        )
+        self.status_label.pack(anchor="w", pady=(0, 20), fill=tk.X)
+        self.multipliedtimes_label.pack(anchor="w", pady=(0, 0), fill=tk.X)
 
         ttk.Button(container, text="Close", command=self.root.destroy).pack()
     # multiplies current number by 2 and sets status label to show the current number.
     def on_run_action(self):
         self.number *= 2
+        self.multipliedtimes += 1
         self.status_var.set(f"Number: {self.number}")
+        self.multipliedtimes_status.set(f"multiplied {self.multipliedtimes} times")
+        
         self._persist_number()
     #resets the number to 1 and updates the status label
     def on_reset(self):
         self.number = 1
+        self.multipliedtimes = 0
         self.status_var.set(f"Number: {self.number}")
+        self.multipliedtimes_status.set(f"multiplied {self.multipliedtimes} times")
         self._persist_number()
 
     def _normalize_number(self, value, fallback=1):
@@ -100,6 +120,7 @@ class multiplyby2:
     def _persist_number(self):
         # Update and store the current tool state.
         self.config["Multiply by 2"]["number"] = self.number
+        self.config["Multiply by 2"]["multipliedtimes"] = self.multipliedtimes
         self.save_config()
 
     def load_config(self):
