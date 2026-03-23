@@ -103,7 +103,6 @@ class Knucklebone:
         self.update_ui()
 
     def altstartnewgame(self):
-        print(self.game_id)
         self._cancel_pending_ai_move()
         self.game_id += 1
         self.player_board = [[], [], []]
