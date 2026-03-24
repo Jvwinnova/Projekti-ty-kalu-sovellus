@@ -114,13 +114,14 @@ class Knucklebone:
         self.status = "| Roll to start playing"
         self.canplay = False
         self.update_ui()
-    # -------- DIFFICULTY -------- #
+    #        DIFFICULTY
     def set_difficulty(self, event):
         self.ai_difficulty = self.difficulty_box.get()
         print("AI difficulty set to:", self.ai_difficulty)
         self.altstartnewgame()
 
-    # -------- GAME LOGIC -------- #
+    #          GAME LOGIC
+    #  rolls dice on players turn  
     def roll_dice(self):
         self.status = ""
         if self.turn != "player":
@@ -130,11 +131,12 @@ class Knucklebone:
         self.current_roll = random.randint(1, 6)
         self.roll_button.config(state="disabled")
         self.update_ui()
-
+    # places player dice on the selected available column
     def place_player(self, col):
+        # if not players turn or no current number on roll return nothing
         if self.turn != "player" or self.current_roll is None:
             return
-
+        #if a line has more than or exactly 3, return nothing  
         if len(self.player_board[col]) >= 3:
             return
 
@@ -151,6 +153,8 @@ class Knucklebone:
             return
 
         self.turn = "ai"
+        self.turn_text = "AI's turn"
+        self.update_ui()
         self.canplay = True
         self.ai_turn()
     def ai_turn(self):
@@ -160,7 +164,7 @@ class Knucklebone:
         if not valid_cols:
             return
 
-        # -------- AI STRATEGY -------- #
+        # AI STRATEGY
         # Easy: pick a random valid column.
         # Medium: prioritize destroying player's matching dice.
         # Hard: balance destruction, stacking same rolls, and column height.
@@ -224,7 +228,7 @@ class Knucklebone:
             self.update_ui()
 
         # Add a short delay before committing the AI's move.
-        self.ai_after_id = self.root.after(600, apply_ai_move)
+        self.ai_after_id = self.root.after(1200, apply_ai_move)
 
     def _cancel_pending_ai_move(self):
         if self.ai_after_id is None:
@@ -236,7 +240,7 @@ class Knucklebone:
         finally:
             self.ai_after_id = None
             
-
+    #handle giving score and multipliers
     def score_board(self, board):
         total = 0
         for col in board:
@@ -252,7 +256,7 @@ class Knucklebone:
     def end_game(self):
         player_score = self.score_board(self.player_board)
         ai_score = self.score_board(self.ai_board)
-
+        #calculate scores and decide winner
         if player_score > ai_score:
             result = f"You win on {self.ai_difficulty} mode!"
         elif ai_score > player_score:
@@ -261,6 +265,7 @@ class Knucklebone:
             result = "Draw!"
 
         self.info_label.config(text=f"{result} ({player_score}-{ai_score})")
+        #disable roll button at the end of the game
         self.roll_button.config(state="disabled")
 
     # -------- UI UPDATE -------- #

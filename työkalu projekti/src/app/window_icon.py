@@ -1,9 +1,9 @@
 from pathlib import Path
 import sys
 
-
+#function to be imported to tool files
 def apply_app_icon(window):
-    """Apply app icon if an .ico file exists."""
+    
     app_dir = Path(__file__).resolve().parent
     project_root = app_dir.parent.parent
     repo_root = project_root.parent
