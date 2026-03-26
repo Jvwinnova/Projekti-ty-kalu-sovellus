@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-
+# This module handles applying the application icon to windows.
 def apply_app_icon(window):
     """Apply app icon if an .ico file exists."""
     app_dir = Path(__file__).resolve().parent

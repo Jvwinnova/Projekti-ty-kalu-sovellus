@@ -40,7 +40,7 @@ def _get_user_config_path():
 
 class AutoClicker:
 
-    # Default settings if config file does not exist
+    # Default config values used for the first time
     DEFAULT_CONFIG = {
         "autoclicker": {
             "hotkey": "f3",
@@ -53,7 +53,9 @@ class AutoClicker:
         self.root = root
         self.root.title("Auto Clicker")
         self.root.geometry("500x400")
+        #applies the app icon to the window
         apply_app_icon(self.root)
+        #calls a function to set up fullscreen toggle on F11
         self._setup_fullscreen_controls()
          
         
@@ -226,6 +228,7 @@ class AutoClicker:
                 break
 
     # ---------------- Hotkeys ---------------- #
+    
     def _normalize_hotkey(self, hotkey):
         return str(hotkey).strip().lower()
 
