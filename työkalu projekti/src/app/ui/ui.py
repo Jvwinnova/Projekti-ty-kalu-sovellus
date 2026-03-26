@@ -9,6 +9,7 @@ from src.app.tools.Multiplyby2 import multiplyby2
 from src.app.tools.stopwatch import Stopwatch
 from src.app.tools.numberguesser import NumberGuesser
 from src.app.tools.pwned import PwnedPasswordChecker
+from src.app.tools.knucklebone import Knucklebone
 
 
 def create_ui(root):
@@ -32,7 +33,7 @@ def create_ui(root):
         main_frame,
         label="Auto Clicker",
         command=open_autoclicker_window,
-        info_title="Auto Clicker",
+        info_title="Auto Clicker info",
         info_text="Automatically clicks at a configurable speed.",
     )
 
@@ -40,7 +41,7 @@ def create_ui(root):
         main_frame,
         label="Colour Seeking Cursor",
         command=open_colourseekingcursor_window,
-        info_title="Colour Seeking Cursor",
+        info_title="Colour Seeking Cursor info",
         info_text="Moves the cursor toward a target color on screen.",
     )
 
@@ -48,7 +49,7 @@ def create_ui(root):
         main_frame,
         label="Stopwatch",
         command=open_stopwatch_window,
-        info_title="Stop watch",
+        info_title="Stopwatch info",
         info_text="Simple stopwatch with start, stop, and reset.",
     )
     
@@ -60,14 +61,14 @@ def create_ui(root):
         main_frame,
         label="Pwned Passwords",
         command=open_pwned_passwords_window,
-        info_title="Pwned Passwords",
+        info_title="Pwned Passwords info",
         info_text="Checks if a password appears in known data breaches.",
     )
     _add_tool_row(
         main_frame,
         label="Multiply by 2",
         command=open_multiplyby2_window,
-        info_title="Multiply by 2",
+        info_title="Multiply by 2 info",
         info_text="Doubles the stored number each time you press Multiply.",
     )
 
@@ -78,18 +79,25 @@ def create_ui(root):
         main_frame,
         label="Pong",
         command=open_pong_window,
-        info_title="Pong",
+        info_title="Pong info",
         info_text=(
             "Classic arcade paddle game. Move up/down and left/right to hit "
             "the ball and score against your opponent."
         ),
+    )
+    _add_tool_row(
+        main_frame,
+        label="Knucklebones",
+        command=open_knucklebone_window,
+        info_title="Knucklebone info",
+        info_text="a dice game, play against a bot with 3 difficulties the harder the better strategy, \n get more score by stacking dice on a single line upwards \n destroy opponent dice by placing the same number die on the same line as theirs \n all dice of this number will be destroyed, so stacking dice has its risk \n score stacks by multiplying the same number stack with depending on how many there is (goes up to 3 times of the actual amount of the dice number)",
     )
     
     _add_tool_row(
         main_frame,
         label="number guesser",
         command=open_number_guesser_window,
-        info_title="Number Guesser",
+        info_title="Number Guesser info",
         info_text="Guess the secret number within a limited number of attempts.",
     )
     return main_frame
@@ -164,4 +172,10 @@ def open_pong_window():
         subprocess.Popen(cmd, cwd=project_root)
     except Exception as e:
         messagebox.showerror("Pong", f"Failed to launch Pong:\n{e}")
+
+
+def open_knucklebone_window():
+    """Open Knucklebone in a new window"""
+    knucklebone_window = tk.Toplevel()
+    Knucklebone(knucklebone_window)
 
