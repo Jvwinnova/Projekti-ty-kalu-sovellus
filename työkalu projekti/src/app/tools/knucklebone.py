@@ -40,7 +40,7 @@ class Knucklebone:
         tk.Label(root, text="AI", font=("Arial", 12)).pack()
         self.ai_frame = tk.Frame(root)
         self.ai_frame.pack(pady=5)
-
+        # makes 3x3 grid of labels for ai
         self.ai_cells = [[None for _ in range(3)] for _ in range(3)]
         for r in range(3):
             for c in range(3):

@@ -10,7 +10,8 @@ from src.app.tools.stopwatch import Stopwatch
 from src.app.tools.numberguesser import NumberGuesser
 from src.app.tools.pwned import PwnedPasswordChecker
 from src.app.tools.knucklebone import Knucklebone
-
+from src.app.tools.calc import Calc
+import datetime
 
 def create_ui(root):
     """Create the main UI with tabs for different tools"""
@@ -51,6 +52,14 @@ def create_ui(root):
         command=open_stopwatch_window,
         info_title="Stopwatch info",
         info_text="Simple stopwatch with start, stop, and reset.",
+    )
+
+    _add_tool_row(
+        main_frame,
+        label="Calculator",
+        command=open_calc_window,
+        info_title="Calculator info",
+        info_text="A simple calculator for basic arithmetic operations.",
     )
     
 
@@ -100,7 +109,16 @@ def create_ui(root):
         info_title="Number Guesser info",
         info_text="Guess the secret number within a limited number of attempts.",
     )
+
+    timelabel = ttk.Label(main_frame, text="")
+    timelabel.pack(padx=200, pady=20)
+    update_time_label(timelabel)
     return main_frame
+
+def update_time_label(label):
+    now = datetime.datetime.now()
+    label.config(text=now.strftime("%d-%m-%Y %H:%M:%S"))
+    label.after(100, update_time_label, label)
 
 
 def _add_tool_row(parent, label, command, info_title, info_text):
@@ -146,6 +164,11 @@ def open_stopwatch_window():
     # Each tool opens in its own top-level window.
     stopwatch_window = tk.Toplevel()
     Stopwatch(stopwatch_window)
+
+def open_calc_window():
+    """Open Calc in a new window"""
+    calc_window = tk.Toplevel()
+    Calc(calc_window)
 
 def open_pwned_passwords_window():
     """Open Pwned Passwords in a new window"""
