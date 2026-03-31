@@ -11,7 +11,11 @@ from src.app.tools.numberguesser import NumberGuesser
 from src.app.tools.pwned import PwnedPasswordChecker
 from src.app.tools.knucklebone import Knucklebone
 from src.app.tools.calc import Calc
+from src.app.tools.musicfile import MusicFile
 import datetime
+
+_OPEN_WINDOWS = {}
+_PONG_PROCESS = None
 
 def create_ui(root):
     """Create the main UI with tabs for different tools"""
@@ -60,6 +64,14 @@ def create_ui(root):
         command=open_calc_window,
         info_title="Calculator info",
         info_text="A simple calculator for basic arithmetic operations.",
+    )
+
+    _add_tool_row(
+        main_frame,
+        label="Music File",
+        command=open_musicfile_window,
+        info_title="Music File info",
+        info_text="Empty tool template wired to the UI.",
     )
     
 
@@ -140,51 +152,78 @@ def _add_tool_row(parent, label, command, info_title, info_text):
     info_btn.pack(side=tk.LEFT, padx=(8, 0))
 
 
+def _bring_window_to_front(window):
+    window.deiconify()
+    window.lift()
+    try:
+        window.focus_force()
+    except tk.TclError:
+        window.focus_set()
+
+
+def _open_singleton_window(key, builder):
+    existing = _OPEN_WINDOWS.get(key)
+    if existing is not None and existing.winfo_exists():
+        _bring_window_to_front(existing)
+        return existing
+
+    window = tk.Toplevel()
+    _OPEN_WINDOWS[key] = window
+
+    def _cleanup_on_destroy(event):
+        if event.widget is window:
+            _OPEN_WINDOWS.pop(key, None)
+
+    window.bind("<Destroy>", _cleanup_on_destroy, add="+")
+    builder(window)
+    return window
+
+
 def open_autoclicker_window():
-    
     """Open AutoClicker in a new window"""
     # Each tool opens in its own top-level window.
-    autoclicker_window = tk.Toplevel()
-    AutoClicker(autoclicker_window)
+    _open_singleton_window("autoclicker", AutoClicker)
 
 def open_number_guesser_window():
     """Open Number Guesser in a new window"""
     # Each tool opens in its own top-level window.
-    number_guesser_window = tk.Toplevel()
-    NumberGuesser(number_guesser_window)
+    _open_singleton_window("number_guesser", NumberGuesser)
 
 def open_colourseekingcursor_window():
     """Open ColourSeekingCursor in a new window"""
     # Each tool opens in its own top-level window.
-    colourseekingcursor_window = tk.Toplevel()
-    ColourSeekingCursor(colourseekingcursor_window)
+    _open_singleton_window("colourseekingcursor", ColourSeekingCursor)
 
 def open_stopwatch_window():
     """Open Stopwatch in a new window"""
     # Each tool opens in its own top-level window.
-    stopwatch_window = tk.Toplevel()
-    Stopwatch(stopwatch_window)
+    _open_singleton_window("stopwatch", Stopwatch)
 
 def open_calc_window():
     """Open Calc in a new window"""
-    calc_window = tk.Toplevel()
-    Calc(calc_window)
+    _open_singleton_window("calc", Calc)
 
 def open_pwned_passwords_window():
     """Open Pwned Passwords in a new window"""
-    pwned_window = tk.Toplevel()
-    PwnedPasswordChecker(pwned_window)
+    _open_singleton_window("pwned_passwords", PwnedPasswordChecker)
+
+def open_musicfile_window():
+    """Open Music File in a new window"""
+    _open_singleton_window("musicfile", MusicFile)
 
 def open_multiplyby2_window():
     """Open multiplyby2 in a new window"""
     # Each tool opens in its own top-level window.
-    multiplyby2_window = tk.Toplevel()
-    multiplyby2(multiplyby2_window)
+    _open_singleton_window("multiplyby2", multiplyby2)
 
 def open_pong_window():
     """Launch Pong as a separate process."""
     # Pong runs in a separate Python process instead of a Tk window.
+    global _PONG_PROCESS
     try:
+        if _PONG_PROCESS is not None and _PONG_PROCESS.poll() is None:
+           
+            return
         project_root = os.path.dirname(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         )
@@ -192,13 +231,13 @@ def open_pong_window():
             cmd = [sys.executable, "--pong"]
         else:
             cmd = [sys.executable, "-m", "src.app.tools.pong"]
-        subprocess.Popen(cmd, cwd=project_root)
+        _PONG_PROCESS = subprocess.Popen(cmd, cwd=project_root)
     except Exception as e:
+        _PONG_PROCESS = None
         messagebox.showerror("Pong", f"Failed to launch Pong:\n{e}")
 
 
 def open_knucklebone_window():
     """Open Knucklebone in a new window"""
-    knucklebone_window = tk.Toplevel()
-    Knucklebone(knucklebone_window)
+    _open_singleton_window("knucklebone", Knucklebone)
 

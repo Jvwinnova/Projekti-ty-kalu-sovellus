@@ -20,7 +20,7 @@ class Calc:
         apply_app_icon(self.root)
 
         self.expression = ""
-        self.display_var = tk.StringVar(value="0")
+        self.display_var = tk.StringVar(value="")
 
         self._build_ui()
 
@@ -77,8 +77,13 @@ class Calc:
             pad.rowconfigure(i, weight=1)
 
     def _append(self, value: str):
-        self.expression += value
-        self._sync_display()
+        if self.expression == "0":
+            self.expression = value
+            self._sync_display()
+        else:
+            
+            self.expression += value
+            self._sync_display()
 
     def _append_operator(self, op: str):
         if not self.expression:
@@ -93,36 +98,15 @@ class Calc:
         self._sync_display()
 
     def _sync_display(self):
-        self.display_var.set(self.expression if self.expression else "0")
+        self.display_var.set(self.expression if self.expression else "")
 
     def _safe_eval(self, expr: str):
-        allowed = set("0123456789+-*/(). ")
+        allowed = set("0123456789+-*/. ")
         if not expr or any(ch not in allowed for ch in expr):
             raise ValueError("Invalid expression")
         return eval(expr, {"__builtins__": {}}, {})
 
-    def _replace_last_number(self, transform):
-        if not self.expression:
-            return
-        if self.expression[-1] in "+-*/":
-            return
-        ops = "+-*/"
-        op_index = -1
-        for i in range(len(self.expression) - 1, -1, -1):
-            ch = self.expression[i]
-            if ch in ops:
-                if ch == "-" and (i == 0 or self.expression[i - 1] in ops):
-                    continue
-                op_index = i
-                break
-        number_str = self.expression[op_index + 1 :] if op_index >= 0 else self.expression
-        value = float(number_str)
-        result = transform(value)
-        if isinstance(result, float) and result.is_integer():
-            result = int(result)
-        prefix = self.expression[: op_index + 1] if op_index >= 0 else ""
-        self.expression = f"{prefix}{result}"
-        self._sync_display()
+ 
 
     # Digit handlers
     def on_0(self):
@@ -173,10 +157,18 @@ class Calc:
    
 
     def on_dot(self):
-        if not self.expression:
-            self.expression = "0."
+        # Handle empty expression
+        if self.expression == "":
+            self.expression += "0."
             self._sync_display()
             return
+        
+        # If character is an operator, append "0." to start a new decimal number
+        if self.expression[-1] in "+-*/":
+            self.expression += "0."
+            self._sync_display()
+            return
+        
         # Prevent multiple dots in the current number
         last_op = max(self.expression.rfind(op) for op in "+-*/")
         current = self.expression[last_op + 1 :]
