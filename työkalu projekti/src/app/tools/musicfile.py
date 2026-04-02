@@ -47,7 +47,7 @@ class MusicFile:
             wraplength=440,
         )
         self.file_label.pack()
-
+        
         ttk.Button(container, text="Play audio", command=self._play_audio).pack(pady=(16, 0))
         ttk.Button(container, text="Pause audio", command=self._pause_audio).pack(pady=(8, 0))
         ttk.Button(container, text="Stop audio", command=self._stop_audio).pack(pady=(8, 0))
