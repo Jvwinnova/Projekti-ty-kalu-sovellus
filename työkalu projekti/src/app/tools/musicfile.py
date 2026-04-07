@@ -66,6 +66,9 @@ class MusicFile:
         self.file_label.config(text=self.selected_file.name)
 
     def _play_audio(self):
+        if self.audioplaying:
+            print("Audio is already playing.")
+            return
         if self.audiopaused:
             self.player.resume()
             self.audiopaused = False
@@ -73,7 +76,7 @@ class MusicFile:
             print("Audio resumed.")
         else:
             # Fall back to the bundled sample track until the user chooses a file.
-            audio_path = self.selected_file or Path(__file__).resolve().parents[4] / "assets" / "mactonight.mp3"
+            audio_path = self.selected_file 
 
             # Keep the player on self so the object is not discarded during playback.
             self.player = audioplayer.AudioPlayer(str(audio_path))
