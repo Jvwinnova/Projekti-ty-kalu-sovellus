@@ -12,6 +12,7 @@ from src.app.tools.pwned import PwnedPasswordChecker
 from src.app.tools.knucklebone import Knucklebone
 from src.app.tools.calc import Calc
 from src.app.tools.musicfile import MusicFile
+from src.app.tools.write import Write
 import datetime
 
 _OPEN_WINDOWS = {}
@@ -72,6 +73,14 @@ def create_ui(root):
         command=open_musicfile_window,
         info_title="Music File info",
         info_text="Empty tool template wired to the UI.",
+    )
+
+    _add_tool_row(
+        main_frame,
+        label="Write",
+        command=open_write_window,
+        info_title="Write info",
+        info_text="Simple text editor with save and save-as.",
     )
     
 
@@ -210,6 +219,10 @@ def open_pwned_passwords_window():
 def open_musicfile_window():
     """Open Music File in a new window"""
     _open_singleton_window("musicfile", MusicFile)
+
+def open_write_window():
+    """Open Write in a new window"""
+    _open_singleton_window("write", Write)
 
 def open_multiplyby2_window():
     """Open multiplyby2 in a new window"""

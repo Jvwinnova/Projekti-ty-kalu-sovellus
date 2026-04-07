@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 from pathlib import Path
 import audioplayer
+
 try:
     from src.app.window_icon import apply_app_icon
 except ModuleNotFoundError:
