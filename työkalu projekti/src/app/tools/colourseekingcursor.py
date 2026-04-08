@@ -409,7 +409,7 @@ class ColourSeekingCursor:
             elif cluster_size < 10000:
                 self.Strength = "Extremely High+"
             elif cluster_size < 30000:
-                self.Strength = "Extremely High+"
+                self.Strength = "Extremely High++"
             else:
                 self.Strength = "Extremely High+++"
                         

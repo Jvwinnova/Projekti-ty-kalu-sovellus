@@ -33,7 +33,7 @@ class MusicFile:
             text="Music Player",
             font=("Segoe UI", 14, "bold"),
         ).pack(pady=(0, 8))
-
+ 
         ttk.Label(
             container,
             text="play mp3 files here",

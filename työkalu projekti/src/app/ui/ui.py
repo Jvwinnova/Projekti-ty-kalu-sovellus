@@ -72,7 +72,7 @@ def create_ui(root):
         label="Music File",
         command=open_musicfile_window,
         info_title="Music File info",
-        info_text="Empty tool template wired to the UI.",
+        info_text="Play MP3 files.",
     )
 
     _add_tool_row(
@@ -80,7 +80,7 @@ def create_ui(root):
         label="Write",
         command=open_write_window,
         info_title="Write info",
-        info_text="Simple text editor with save and save-as.",
+        info_text="Simple text editor with saving as a file.",
     )
     
 

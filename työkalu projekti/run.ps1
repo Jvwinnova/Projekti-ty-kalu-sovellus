@@ -1,9 +1,22 @@
 $ErrorActionPreference = "Stop"
 
-$venvPython = Join-Path $PSScriptRoot ".venv312\Scripts\python.exe"
-if (-not (Test-Path $venvPython)) {
-    Write-Host "Python venv not found at .venv312. Please run:" -ForegroundColor Yellow
-    Write-Host "  C:\Python312\python.exe -m venv .venv312" -ForegroundColor Yellow
+$venvCandidates = @(
+    (Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"),
+    (Join-Path $PSScriptRoot ".venv312\Scripts\python.exe")
+)
+
+$venvPython = $null
+foreach ($candidate in $venvCandidates) {
+    if (Test-Path $candidate) {
+        $venvPython = $candidate
+        break
+    }
+}
+
+if (-not $venvPython) {
+    Write-Host "Python venv not found. Looked for:" -ForegroundColor Yellow
+    Write-Host "  ..\\.venv\\Scripts\\python.exe" -ForegroundColor Yellow
+    Write-Host "  .venv312\\Scripts\\python.exe" -ForegroundColor Yellow
     exit 1
 }
 

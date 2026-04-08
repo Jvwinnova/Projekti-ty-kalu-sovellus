@@ -29,7 +29,7 @@ class Write:
 
         self.root = root
         self.root.title("Write")
-        self.root.geometry("420x260")
+        self.root.geometry("800x400")
         self.root.resizable(True, True)
         apply_app_icon(self.root)
 
@@ -50,7 +50,7 @@ class Write:
         save_as_button.pack(pady=2)
 
         # TEXT WIDGET (NOT StringVar, NOT textvariable)
-        self.text = tk.Text(self.root, width=40, height=10)
+        self.text = tk.Text(self.root, width=200, height=100)
         self.text.pack(pady=16)
 
         # load saved text into widget
