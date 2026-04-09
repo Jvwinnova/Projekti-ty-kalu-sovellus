@@ -929,7 +929,7 @@ class ColourSeekingCursor:
             return True
         
         except tk.TclError:
-            return False
+            return False 
         
     
         

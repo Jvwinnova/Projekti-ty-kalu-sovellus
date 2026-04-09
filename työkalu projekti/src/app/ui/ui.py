@@ -13,6 +13,7 @@ from src.app.tools.knucklebone import Knucklebone
 from src.app.tools.calc import Calc
 from src.app.tools.musicfile import MusicFile
 from src.app.tools.write import Write
+from src.app.tools.randomwalk import RandomWalk
 import datetime
 
 _OPEN_WINDOWS = {}
@@ -82,6 +83,8 @@ def create_ui(root):
         info_title="Write info",
         info_text="Simple text editor with saving as a file.",
     )
+
+    
     
 
     # Section title for tools that are less important.
@@ -101,7 +104,13 @@ def create_ui(root):
         info_title="Multiply by 2 info",
         info_text="Doubles the stored number each time you press Multiply.",
     )
-
+    _add_tool_row(
+        main_frame,
+        label="Random Walk",
+        command=open_template_window,
+        info_title="Random Walk info",
+        info_text="Infinite random walk simulation.",
+    )
     # Section title for mini games.
     title_label = ttk.Label(main_frame, text="Mini games", font=("Arial", 12, "bold"))
     title_label.pack(pady=20)
@@ -223,6 +232,10 @@ def open_musicfile_window():
 def open_write_window():
     """Open Write in a new window"""
     _open_singleton_window("write", Write)
+
+def open_template_window():
+    """Open Template in a new window"""
+    _open_singleton_window("template", RandomWalk)
 
 def open_multiplyby2_window():
     """Open multiplyby2 in a new window"""

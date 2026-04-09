@@ -5,3 +5,5 @@ requests
 pygame
 tkcolorpicker
 python-vlc
+numpy
+matplotlib
