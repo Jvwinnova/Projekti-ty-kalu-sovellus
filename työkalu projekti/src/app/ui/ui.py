@@ -3,6 +3,8 @@ from tkinter import ttk, messagebox
 import subprocess
 import sys
 import os
+import datetime
+
 from src.app.tools.autoclicker import AutoClicker
 from src.app.tools.colourseekingcursor import ColourSeekingCursor
 from src.app.tools.Multiplyby2 import multiplyby2
@@ -14,136 +16,97 @@ from src.app.tools.calc import Calc
 from src.app.tools.musicfile import MusicFile
 from src.app.tools.write import Write
 from src.app.tools.randomwalk import RandomWalk
-import datetime
+from src.app.tools.passgen import PasswordGenerator
 
 _OPEN_WINDOWS = {}
 _PONG_PROCESS = None
 
-def create_ui(root):
-    """Create the main UI with tabs for different tools"""
-    # This function builds the main window layout and all tool buttons.
 
-    # Create the main container frame for all widgets.
+def create_ui(root):
+    """Create the main UI with 2-column tool layout"""
+
     main_frame = ttk.Frame(root)
     main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-    
-    # Main app title.
+
     title_label = ttk.Label(main_frame, text="Tool Kit", font=("Arial", 18, "bold"))
-    title_label.pack(pady=20)
-    
-    # Section title.
-    title_label = ttk.Label(main_frame, text="Main tools", font=("Arial", 16, "bold"))
-    title_label.pack(pady=20)
+    title_label.pack(pady=10)
 
-    # Each tool row contains the main button plus a small info button.
-    _add_tool_row(
-        main_frame,
-        label="Auto Clicker",
-        command=open_autoclicker_window,
-        info_title="Auto Clicker info",
-        info_text="Automatically clicks at a configurable speed.",
-    )
+    # ================= MAIN TOOLS =================
+    ttk.Label(main_frame, text="Main tools", font=("Arial", 16, "bold")).pack(pady=10)
 
-    _add_tool_row(
-        main_frame,
-        label="Colour Seeking Cursor",
-        command=open_colourseekingcursor_window,
-        info_title="Colour Seeking Cursor info",
-        info_text="Moves the cursor toward a target color on screen.",
-    )
+    main_tools_frame = ttk.Frame(main_frame)
+    main_tools_frame.pack(fill=tk.BOTH, expand=True)
 
-    _add_tool_row(
-        main_frame,
-        label="Stopwatch",
-        command=open_stopwatch_window,
-        info_title="Stopwatch info",
-        info_text="Simple stopwatch with start, stop, and reset.",
-    )
+    main_tools = [
+        ("Auto Clicker", open_autoclicker_window, "Auto Clicker info", "Automatically clicks at a configurable speed."),
+        ("Colour Seeking Cursor", open_colourseekingcursor_window, "Cursor info", "Moves cursor toward a target color."),
+        ("Stopwatch", open_stopwatch_window, "Stopwatch info", "Simple stopwatch."),
+        ("Calculator", open_calc_window, "Calculator info", "Basic arithmetic calculator."),
+        ("Music File", open_musicfile_window, "Music info", "Play MP3 files."),
+        ("Write", open_write_window, "Write info", "Simple text editor."),
+    ]
 
-    _add_tool_row(
-        main_frame,
-        label="Calculator",
-        command=open_calc_window,
-        info_title="Calculator info",
-        info_text="A simple calculator for basic arithmetic operations.",
-    )
+    _build_tool_grid(main_tools_frame, main_tools)
 
-    _add_tool_row(
-        main_frame,
-        label="Music File",
-        command=open_musicfile_window,
-        info_title="Music File info",
-        info_text="Play MP3 files.",
-    )
+    # ================= IRRELEVANT TOOLS =================
+    ttk.Label(main_frame, text="Irrelevant tools", font=("Arial", 12, "bold")).pack(pady=10)
 
-    _add_tool_row(
-        main_frame,
-        label="Write",
-        command=open_write_window,
-        info_title="Write info",
-        info_text="Simple text editor with saving as a file.",
-    )
+    irrelevant_frame = ttk.Frame(main_frame)
+    irrelevant_frame.pack(fill=tk.BOTH, expand=True)
 
-    
-    
+    irrelevant_tools = [
+        ("Pwned Passwords", open_pwned_passwords_window, "Pwned info", "Checks if password was leaked."),
+        ("Password Generator", open_password_generator_window, "Gen info", "Generates secure passwords."),
+        ("Multiply by 2", open_multiplyby2_window, "Multiply info", "Doubles a number."),
+        ("Random Walk", open_template_window, "Random Walk info", "Infinite random movement simulation."),
+    ]
 
-    # Section title for tools that are less important.
-    title_label = ttk.Label(main_frame, text="Irrelevant tools", font=("Arial", 12, "bold"))
-    title_label.pack(pady=20)
-    _add_tool_row(
-        main_frame,
-        label="Pwned Passwords",
-        command=open_pwned_passwords_window,
-        info_title="Pwned Passwords info",
-        info_text="Checks if a password appears in known data breaches.",
-    )
-    _add_tool_row(
-        main_frame,
-        label="Multiply by 2",
-        command=open_multiplyby2_window,
-        info_title="Multiply by 2 info",
-        info_text="Doubles the stored number each time you press Multiply.",
-    )
-    _add_tool_row(
-        main_frame,
-        label="Random Walk",
-        command=open_template_window,
-        info_title="Random Walk info",
-        info_text="Infinite random walk simulation.",
-    )
-    # Section title for mini games.
-    title_label = ttk.Label(main_frame, text="Mini games", font=("Arial", 12, "bold"))
-    title_label.pack(pady=20)
-    _add_tool_row(
-        main_frame,
-        label="Pong",
-        command=open_pong_window,
-        info_title="Pong info",
-        info_text=(
-            "Classic arcade paddle game. Move up/down and left/right to hit "
-            "the ball and score against your opponent."
-        ),
-    )
-    _add_tool_row(
-        main_frame,
-        label="Knucklebones",
-        command=open_knucklebone_window,
-        info_title="Knucklebone info",
-        info_text="a dice game, play against a bot with 3 difficulties the harder the better strategy, \n get more score by stacking dice on a single line upwards \n destroy opponent dice by placing the same number die on the same line as theirs \n all dice of this number will be destroyed, so stacking dice has its risk \n score stacks by multiplying the same number stack with depending on how many there is (goes up to 3 times of the actual amount of the dice number)",
-    )
-    
-    _add_tool_row(
-        main_frame,
-        label="number guesser",
-        command=open_number_guesser_window,
-        info_title="Number Guesser info",
-        info_text="Guess the secret number within a limited number of attempts.",
-    )
+    _build_tool_grid(irrelevant_frame, irrelevant_tools)
 
+    # ================= MINI GAMES =================
+    ttk.Label(main_frame, text="Mini games", font=("Arial", 12, "bold")).pack(pady=10)
+
+    games_frame = ttk.Frame(main_frame)
+    games_frame.pack(fill=tk.BOTH, expand=True)
+
+    games_tools = [
+        ("Pong", open_pong_window, "Pong info", "Classic arcade paddle game."),
+        ("Knucklebones", open_knucklebone_window, "Knucklebone info", "Dice strategy game."),
+        ("Number Guesser", open_number_guesser_window, "Guess info", "Guess the secret number."),
+    ]
+
+    _build_tool_grid(games_frame, games_tools)
+
+    # ================= CLOCK =================
     timelabel = ttk.Label(main_frame, text="")
-    timelabel.pack(padx=200, pady=20)
+    timelabel.pack(pady=15)
     update_time_label(timelabel)
+
     return main_frame
+
+
+def _build_tool_grid(parent, tools):
+    """Build 2-column grid layout for tools"""
+    for index, (label, command, info_title, info_text) in enumerate(tools):
+        row = index // 2
+        col = index % 2
+
+        frame = ttk.Frame(parent, padding=5)
+        frame.grid(row=row, column=col, padx=10, pady=10, sticky="ew")
+
+        parent.grid_columnconfigure(col, weight=1)
+
+        tool_btn = ttk.Button(frame, text=label, command=command)
+        tool_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        info_btn = ttk.Button(
+            frame,
+            text="ⓘ",
+            width=3,
+            command=lambda t=info_title, x=info_text: messagebox.showinfo(t, x),
+        )
+        info_btn.pack(side=tk.LEFT, padx=(8, 0))
+
 
 def update_time_label(label):
     now = datetime.datetime.now()
@@ -151,24 +114,7 @@ def update_time_label(label):
     label.after(100, update_time_label, label)
 
 
-def _add_tool_row(parent, label, command, info_title, info_text):
-    # Create a horizontal row that holds one tool button and one info button.
-    row = ttk.Frame(parent)
-    row.pack(pady=10, padx=20, fill=tk.X)
-
-    # Main tool button (launches the tool).
-    tool_btn = ttk.Button(row, text=label, command=command)
-    tool_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
-
-    # Info button (shows a help message).
-    info_btn = ttk.Button(
-        row,
-        text="ⓘ",
-        width=3,
-        command=lambda: messagebox.showinfo(info_title, info_text),
-    )
-    info_btn.pack(side=tk.LEFT, padx=(8, 0))
-
+# ================= WINDOW HANDLING =================
 
 def _bring_window_to_front(window):
     window.deiconify()
@@ -188,82 +134,71 @@ def _open_singleton_window(key, builder):
     window = tk.Toplevel()
     _OPEN_WINDOWS[key] = window
 
-    def _cleanup_on_destroy(event):
+    def _cleanup(event):
         if event.widget is window:
             _OPEN_WINDOWS.pop(key, None)
 
-    window.bind("<Destroy>", _cleanup_on_destroy, add="+")
+    window.bind("<Destroy>", _cleanup, add="+")
     builder(window)
     return window
 
 
+# ================= TOOL OPENERS =================
+
+def open_password_generator_window():
+    _open_singleton_window("password_generator", PasswordGenerator)
+
 def open_autoclicker_window():
-    """Open AutoClicker in a new window"""
-    # Each tool opens in its own top-level window.
     _open_singleton_window("autoclicker", AutoClicker)
 
 def open_number_guesser_window():
-    """Open Number Guesser in a new window"""
-    # Each tool opens in its own top-level window.
     _open_singleton_window("number_guesser", NumberGuesser)
 
 def open_colourseekingcursor_window():
-    """Open ColourSeekingCursor in a new window"""
-    # Each tool opens in its own top-level window.
     _open_singleton_window("colourseekingcursor", ColourSeekingCursor)
 
 def open_stopwatch_window():
-    """Open Stopwatch in a new window"""
-    # Each tool opens in its own top-level window.
     _open_singleton_window("stopwatch", Stopwatch)
 
 def open_calc_window():
-    """Open Calc in a new window"""
     _open_singleton_window("calc", Calc)
 
 def open_pwned_passwords_window():
-    """Open Pwned Passwords in a new window"""
     _open_singleton_window("pwned_passwords", PwnedPasswordChecker)
 
 def open_musicfile_window():
-    """Open Music File in a new window"""
     _open_singleton_window("musicfile", MusicFile)
 
 def open_write_window():
-    """Open Write in a new window"""
     _open_singleton_window("write", Write)
 
 def open_template_window():
-    """Open Template in a new window"""
     _open_singleton_window("template", RandomWalk)
 
 def open_multiplyby2_window():
-    """Open multiplyby2 in a new window"""
-    # Each tool opens in its own top-level window.
     _open_singleton_window("multiplyby2", multiplyby2)
 
+def open_knucklebone_window():
+    _open_singleton_window("knucklebone", Knucklebone)
+
+
 def open_pong_window():
-    """Launch Pong as a separate process."""
-    # Pong runs in a separate Python process instead of a Tk window.
     global _PONG_PROCESS
     try:
         if _PONG_PROCESS is not None and _PONG_PROCESS.poll() is None:
-           
             return
+
         project_root = os.path.dirname(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         )
+
         if getattr(sys, "frozen", False):
             cmd = [sys.executable, "--pong"]
         else:
             cmd = [sys.executable, "-m", "src.app.tools.pong"]
+
         _PONG_PROCESS = subprocess.Popen(cmd, cwd=project_root)
+
     except Exception as e:
         _PONG_PROCESS = None
         messagebox.showerror("Pong", f"Failed to launch Pong:\n{e}")
-
-
-def open_knucklebone_window():
-    """Open Knucklebone in a new window"""
-    _open_singleton_window("knucklebone", Knucklebone)
-
