@@ -17,7 +17,7 @@ from src.app.tools.musicfile import MusicFile
 from src.app.tools.write import Write
 from src.app.tools.randomwalk import RandomWalk
 from src.app.tools.passgen import PasswordGenerator
-
+from src.app.tools.tictatactoe import TicTacToeGame
 _OPEN_WINDOWS = {}
 _PONG_PROCESS = None
 
@@ -73,6 +73,7 @@ def create_ui(root):
         ("Pong", open_pong_window, "Pong info", "Classic arcade paddle game."),
         ("Knucklebones", open_knucklebone_window, "Knucklebone info", "Dice strategy game."),
         ("Number Guesser", open_number_guesser_window, "Guess info", "Guess the secret number."),
+        ("Tic Tac Toe", open_minigame_template_window, "Tic Tac Toe info", "Classic Tic Tac Toe game."),
     ]
 
     _build_tool_grid(games_frame, games_tools)
@@ -180,6 +181,9 @@ def open_multiplyby2_window():
 
 def open_knucklebone_window():
     _open_singleton_window("knucklebone", Knucklebone)
+
+def open_minigame_template_window():
+    _open_singleton_window("minigame_template", TicTacToeGame)
 
 
 def open_pong_window():
