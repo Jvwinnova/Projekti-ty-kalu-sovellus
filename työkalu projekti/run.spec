@@ -12,13 +12,21 @@ def _find_project_root(start: Path) -> Path:
 spec_dir = Path(SPECPATH).resolve()
 project_root = _find_project_root(spec_dir)
 icon_file = project_root / "assets" / "app.ico"
+copy_icon_file = project_root / "assets" / "copy.png"
 icon_path = icon_file if icon_file.exists() else None
+data_files = []
+
+if icon_path:
+    data_files.append((str(icon_file), "assets"))
+
+if copy_icon_file.exists():
+    data_files.append((str(copy_icon_file), "assets"))
 
 a = Analysis(
     [str(project_root / "bin" / "run.py")],
     pathex=[str(project_root)],
     binaries=[],
-    datas=[(str(icon_file), "assets")] if icon_path else [],
+    datas=data_files,
     hiddenimports=[
         "pygame",
         "requests",
