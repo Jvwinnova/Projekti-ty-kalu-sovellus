@@ -18,6 +18,7 @@ from src.app.tools.write import Write
 from src.app.tools.randomwalk import RandomWalk
 from src.app.tools.passgen import PasswordGenerator
 from src.app.tools.tictatactoe import TicTacToeGame
+from src.app.tools.unit import Unit
 _OPEN_WINDOWS = {}
 _PONG_PROCESS = None
 
@@ -59,6 +60,7 @@ def create_ui(root):
         ("Password Generator", open_password_generator_window, "Gen info", "Generates secure passwords."),
         ("Multiply by 2", open_multiplyby2_window, "Multiply info", "Doubles a number."),
         ("Random Walk", open_template_window, "Random Walk info", "Infinite random movement simulation."),
+        ("Unit Converter", open_unit_window, "Unit Converter info", "Converts between 2 different units of measurement."),
     ]
 
     _build_tool_grid(irrelevant_frame, irrelevant_tools)
@@ -178,6 +180,9 @@ def open_template_window():
 
 def open_multiplyby2_window():
     _open_singleton_window("multiplyby2", multiplyby2)
+
+def open_unit_window():
+    _open_singleton_window("unit", Unit)
 
 def open_knucklebone_window():
     _open_singleton_window("knucklebone", Knucklebone)
