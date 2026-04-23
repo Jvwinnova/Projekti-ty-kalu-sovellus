@@ -20,7 +20,9 @@ class Unit:
 
         self.container = ttk.Frame(self.root, padding=16)
         self.container.pack(fill=tk.BOTH, expand=True)
+        self.distance = False
         self.kg_to_lb = True
+        self.km_to_miles = True
         ttk.Label(
             self.container,
             text="Unit converter",
@@ -41,8 +43,32 @@ class Unit:
         self.kgentry.bind("<KeyRelease>", self.convert_to_pounds)
         self.switch_button = ttk.Button(self.container, text="Switch Conversion", command=self.switch)
         self.switch_button.pack(pady=10)
+        self.switchto_button = ttk.Button(self.container, text="Switch Units", command=self.switchto_distance_and_weight)
+        self.switchto_button.pack(pady=10)
         self.result_label = ttk.Label(self.container, text="")
         self.result_label.pack(pady=10)
+    def switchto_distance_and_weight(self):
+        
+        if self.km_to_miles and not self.distance:
+            self.distance = True
+            self.label.config(text="Enter kilometers to convert to miles")
+            self.kgentry.bind("<KeyRelease>", self.convert_to_miles)
+            self.convert_to_miles(None)  # Update result immediately when switching
+        elif self.km_to_miles == False and not self.distance:
+            self.distance = True
+            self.label.config(text="Enter miles to convert to kilometers")
+            self.kgentry.bind("<KeyRelease>", self.convert_to_kilometers)
+            self.convert_to_kilometers(None)  # Update result immediately when switching
+        elif self.kg_to_lb and self.distance:
+            self.distance = False
+            self.label.config(text="Enter kilograms to convert to pounds")
+            self.kgentry.bind("<KeyRelease>", self.convert_to_pounds)
+            self.convert_to_pounds(None)  # Update result immediately when switching
+        else:
+            self.distance = False
+            self.label.config(text="Enter pounds to convert to kilograms")
+            self.kgentry.bind("<KeyRelease>", self.convert_to_kilograms)
+            self.convert_to_kilograms(None)  # Update result immediately when switching back
 
     def convert_to_pounds(self, event):
         value = self.kgentry.get().strip()
@@ -74,9 +100,48 @@ class Unit:
 
         kg = lb / 2.20462
         self.result_label.config(text=f"{lb:.2f} lbs = {kg:.2f} kg")
+    def convert_to_miles(self, event):
+        value = self.kgentry.get().strip()
 
+        if not value:
+            self.result_label.config(text="")
+            return
+
+        try:
+            km = float(value)
+        except ValueError:
+            self.result_label.config(text="Invalid input")
+            return
+
+        miles = km * 0.621371
+        self.result_label.config(text=f"{km:.2f} km = {miles:.2f} miles")
+    def convert_to_kilometers(self, event):
+        value = self.kgentry.get().strip()
+
+        if not value:
+            self.result_label.config(text="")
+            return
+
+        try:
+            miles = float(value)
+        except ValueError:
+            self.result_label.config(text="Invalid input")
+            return
+
+        km = miles / 0.621371
+        self.result_label.config(text=f"{miles:.2f} miles = {km:.2f} km")
     def switch(self):
-        if self.kg_to_lb:
+        if self.distance and self.km_to_miles:
+            self.km_to_miles = False
+            self.label.config(text="Enter miles to convert to kilometers")
+            self.kgentry.bind("<KeyRelease>", self.convert_to_miles)
+            self.convert_to_pounds(None)  # Update result immediately when switching
+        elif self.distance and not self.km_to_miles:
+            self.km_to_miles = True
+            self.label.config(text="Enter kilometers to convert to miles")
+            self.kgentry.bind("<KeyRelease>", self.convert_to_kilometers)
+            self.convert_to_kilometers(None)
+        elif self.kg_to_lb and not self.distance:
             self.kg_to_lb = False
             self.label.config(text="Enter pounds to convert to kilograms")
             self.kgentry.bind("<KeyRelease>", self.convert_to_kilograms)
@@ -86,7 +151,8 @@ class Unit:
             self.label.config(text="Enter kilograms to convert to pounds")
             self.kgentry.bind("<KeyRelease>", self.convert_to_pounds)
             self.convert_to_pounds(None)  # Update result immediately when switching back
-           
+             # Update result immediately when switching back
+        
 
       
 
