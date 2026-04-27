@@ -52,9 +52,10 @@ class Unit:
         if self.km_to_miles and not self.distance:
             self.distance = True
             self.label.config(text="Enter kilometers to convert to miles")
+            
             self.kgentry.bind("<KeyRelease>", self.convert_to_miles)
             self.convert_to_miles(None)  # Update result immediately when switching
-        elif self.km_to_miles == False and not self.distance:
+        elif not self.km_to_miles and not self.distance:
             self.distance = True
             self.label.config(text="Enter miles to convert to kilometers")
             self.kgentry.bind("<KeyRelease>", self.convert_to_kilometers)
@@ -133,12 +134,12 @@ class Unit:
     def switch(self):
         if self.distance and self.km_to_miles:
             self.km_to_miles = False
-            self.label.config(text="Enter miles to convert to kilometers")
+            self.label.config(text="Enter kilometers to convert to miles")
             self.kgentry.bind("<KeyRelease>", self.convert_to_miles)
-            self.convert_to_pounds(None)  # Update result immediately when switching
+            self.convert_to_miles(None)  # Update result immediately when switching
         elif self.distance and not self.km_to_miles:
             self.km_to_miles = True
-            self.label.config(text="Enter kilometers to convert to miles")
+            self.label.config(text="Enter miles to convert to kilometers")
             self.kgentry.bind("<KeyRelease>", self.convert_to_kilometers)
             self.convert_to_kilometers(None)
         elif self.kg_to_lb and not self.distance:
