@@ -1,3 +1,5 @@
+"""Animated turtle-based random walk embedded inside a Tkinter window."""
+
 import tkinter as tk
 import random
 import turtle
@@ -57,6 +59,7 @@ class RandomWalk:
 
 
 def run():
+    """Launch the Random Walk tool."""
     root = tk.Tk()
     RandomWalk(root)
     root.mainloop()

@@ -1,3 +1,5 @@
+"""Generate random passwords and copy them to the clipboard."""
+
 import tkinter as tk
 import random
 import string
@@ -15,6 +17,7 @@ except ModuleNotFoundError:
 
 
 def _find_copy_icon_path() -> Path | None:
+    """Locate the copy button image in source or packaged builds."""
     app_dir = Path(__file__).resolve().parent
     project_root = app_dir.parent.parent.parent
     repo_root = project_root.parent
@@ -60,6 +63,7 @@ class PasswordGenerator:
 
 
     def build_ui(self):
+        """Create the password length input, preview, and action buttons."""
         self.length_entry = tk.Entry(self.root)
         self.length_entry.pack(pady=16)
         self.length_visual_label = tk.Label(self.root, text=f"Length: {self.length}")
@@ -77,12 +81,14 @@ class PasswordGenerator:
        
 
     def _copy_to_clipboard(self):
+        """Copy the latest generated password to the system clipboard."""
         try:
             pyperclip.copy(self.random_string)
         except pyperclip.PyperclipException as exc:
             messagebox.showerror("Password Generator", f"Failed to copy password:\n{exc}")
 
     def _on_entry_change(self, event):
+        """Keep the requested password length in sync with the entry widget."""
         try:
             self.length = int(self.length_entry.get())
             
@@ -94,12 +100,14 @@ class PasswordGenerator:
             
 
     def on_generate(self):
+        """Generate a new random alphanumeric password using the selected length."""
         self.random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=self.length))
         self.password_label.config(text=f"password: {self.random_string}")
         
        
         
 def run():
+    """Launch the password generator tool."""
     root = tk.Tk()
     PasswordGenerator(root)
     root.mainloop()

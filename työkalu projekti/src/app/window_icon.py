@@ -2,8 +2,7 @@ from pathlib import Path
 import sys
 
 # This module handles applying the application icon to windows.
-def apply_app_icon(window):
-    
+def find_app_icon_path():
     app_dir = Path(__file__).resolve().parent
     project_root = app_dir.parent.parent
     repo_root = project_root.parent
@@ -21,8 +20,16 @@ def apply_app_icon(window):
 
     for icon_path in candidates:
         if icon_path.exists():
-            try:
-                window.iconbitmap(str(icon_path))
-                return
-            except Exception:
-                return
+            return icon_path
+    return None
+
+
+def apply_app_icon(window):
+    icon_path = find_app_icon_path()
+    if not icon_path:
+        return
+    try:
+        window.iconbitmap(str(icon_path))
+        return
+    except Exception:
+        return

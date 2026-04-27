@@ -1,3 +1,5 @@
+"""Auto clicker with persisted settings and a global toggle hotkey."""
+
 # Import GUI library
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -33,12 +35,14 @@ pyautogui.FAILSAFE = True
 
 
 def _get_user_config_path():
+    """Return the shared config file path used by ToolKit tools."""
     base_dir = os.getenv("APPDATA") or os.path.expanduser("~")
     config_dir = os.path.join(base_dir, "ToolKit")
     return os.path.join(config_dir, "config.json")
 
 
 class AutoClicker:
+    """Repeatedly click the mouse until stopped by UI or hotkey."""
 
     # Default config values used for the first time
     DEFAULT_CONFIG = {
@@ -230,12 +234,15 @@ class AutoClicker:
     # ---------------- Hotkeys ---------------- #
     
     def _normalize_hotkey(self, hotkey):
+        """Store hotkeys in a consistent lowercase form."""
         return str(hotkey).strip().lower()
 
     def _is_single_key_hotkey(self, hotkey):
+        """Detect whether the binding is a plain key or a combo expression."""
         return "+" not in hotkey and "," not in hotkey
 
     def _safe_after(self, callback):
+        """Schedule UI work only if the Tk window still exists."""
         try:
             self.root.after(0, callback)
             return True

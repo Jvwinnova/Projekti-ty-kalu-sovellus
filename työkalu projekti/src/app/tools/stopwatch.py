@@ -1,3 +1,5 @@
+"""Stopwatch with persisted elapsed time and a configurable hotkey."""
+
 import json
 import math
 import os
@@ -21,7 +23,7 @@ except ModuleNotFoundError:
 
 
 class Stopwatch:
-    """stop watch."""
+    """Start, stop, reset, and persist a stopwatch session."""
     CONFIG_SECTION = "stopwatch"
     def __init__(self, root: tk.Tk):
         self._get_user_config_path = _get_user_config_path
@@ -179,15 +181,18 @@ class Stopwatch:
        
     
     def _schedule_tick(self):
+        """Queue the next UI refresh while the stopwatch is running."""
         self._cancel_tick()
         self._tick_job = self.root.after(30, self._tick)
 
     def _cancel_tick(self):
+        """Cancel any pending scheduled refresh callback."""
         if self._tick_job is not None:
             self.root.after_cancel(self._tick_job)
             self._tick_job = None
 
     def _tick(self):
+        """Refresh elapsed time and requeue another update."""
         if not self.running:
             return
         self.elapsed_time = time.perf_counter() - self._start_time
@@ -195,6 +200,7 @@ class Stopwatch:
         self._schedule_tick()
 
     def _update_display(self):
+        """Refresh the visible time label from the current elapsed value."""
         self.time_label.config(text=self._format_time(self.elapsed_time))
 
     def _toggle_running(self):
@@ -233,6 +239,7 @@ class Stopwatch:
 
 
 def run():
+    """Launch the Stopwatch tool."""
     root = tk.Tk()
     Stopwatch(root)
     root.mainloop()

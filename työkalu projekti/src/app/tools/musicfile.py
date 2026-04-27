@@ -1,3 +1,5 @@
+"""Simple MP3 player wrapper around the `audioplayer` package."""
+
 import tkinter as tk
 from tkinter import filedialog, ttk
 from pathlib import Path
@@ -11,7 +13,7 @@ except ModuleNotFoundError:
 
 
 class MusicFile:
-    """Empty tool template wired to the UI."""
+    """Choose, play, pause, and stop a single audio file."""
     audiopaused = False
     audioplaying = False
     def __init__(self, root: tk.Tk):
@@ -25,6 +27,7 @@ class MusicFile:
         self._build_ui()
 
     def _build_ui(self):
+        """Create the file picker and playback controls."""
         container = ttk.Frame(self.root, padding=16)
         container.pack(fill=tk.BOTH, expand=True)
 
@@ -66,6 +69,7 @@ class MusicFile:
         self.file_label.config(text=self.selected_file.name)
 
     def _play_audio(self):
+        """Resume paused audio or start playback for the selected file."""
         if self.audioplaying:
             print("Audio is already playing.")
             return
@@ -85,12 +89,14 @@ class MusicFile:
             self.audioplaying = True
             print("Playing audio...")
     def _pause_audio(self):
+        """Pause the current track if one is active."""
         if self.player:
             self.player.pause()
             self.audiopaused = True
             self.audioplaying = False
             print("Audio paused.")
     def _stop_audio(self):
+        """Stop playback and reset playback flags."""
         if self.player:
             self.player.stop()
             self.audiopaused = False
@@ -98,6 +104,7 @@ class MusicFile:
             print("Audio stopped.")
 
 def run():
+    """Launch the music player tool."""
     root = tk.Tk()
     MusicFile(root)
     root.mainloop()

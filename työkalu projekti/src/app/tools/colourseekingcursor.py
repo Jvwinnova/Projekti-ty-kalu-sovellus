@@ -1,3 +1,5 @@
+"""Move the cursor toward nearby clusters of matching on-screen colors."""
+
 import tkinter as tk
 from tkinter import ttk, messagebox, colorchooser
 import pyautogui

@@ -1,3 +1,5 @@
+"""Basic four-function calculator with a button-based Tkinter UI."""
+
 import tkinter as tk
 from tkinter import ttk
 import math
@@ -10,7 +12,7 @@ except ModuleNotFoundError:
 
 
 class Calc:
-    """Simple calculator with explicit button handlers."""
+    """Evaluate simple arithmetic expressions entered through calculator buttons."""
 
     def __init__(self, root: tk.Tk):
         self.root = root
@@ -23,8 +25,8 @@ class Calc:
         self.display_var = tk.StringVar(value="")
 
         self._build_ui()
-
     def _build_ui(self):
+        """Create the read-only display and calculator button grid."""
         container = ttk.Frame(self.root, padding=12)
         container.pack(fill=tk.BOTH, expand=True)
 
@@ -77,6 +79,7 @@ class Calc:
             pad.rowconfigure(i, weight=1)
 
     def _append(self, value: str):
+        """Append a digit or decimal text fragment to the current expression."""
         if self.expression == "0":
             self.expression = value
             self._sync_display()
@@ -86,6 +89,7 @@ class Calc:
             self._sync_display()
 
     def _append_operator(self, op: str):
+        """Append or replace the trailing operator in the current expression."""
         if not self.expression:
             if op == "-":
                 self.expression = "-"
@@ -98,9 +102,11 @@ class Calc:
         self._sync_display()
 
     def _sync_display(self):
+        """Push the internal expression string to the on-screen display."""
         self.display_var.set(self.expression if self.expression else "")
 
     def _safe_eval(self, expr: str):
+        """Evaluate a sanitized arithmetic expression with builtins disabled."""
         allowed = set("0123456789+-*/. ")
         if not expr or any(ch not in allowed for ch in expr):
             raise ValueError("Invalid expression")
@@ -207,6 +213,7 @@ class Calc:
 
 
 def run():
+    """Launch the calculator window."""
     root = tk.Tk()
     Calc(root)
     root.mainloop()

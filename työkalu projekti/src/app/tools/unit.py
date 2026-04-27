@@ -1,3 +1,5 @@
+"""Convert between weight and distance units in a small Tkinter form."""
+
 import tkinter as tk
 from tkinter import ttk
 
@@ -9,20 +11,20 @@ except ModuleNotFoundError:
 
 
 class Unit:
-    """Minimal placeholder tool that only opens a window."""
+    """Switch between pounds/kilograms and miles/kilometers conversions."""
 
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Unit converter")
         self.root.geometry("360x300")
         self.root.resizable(False, False)
-        apply_app_icon(self.root)
+        apply_app_icon(self.root) #use the icon function from another file
 
         self.container = ttk.Frame(self.root, padding=16)
         self.container.pack(fill=tk.BOTH, expand=True)
-        self.distance = False
-        self.kg_to_lb = True
-        self.km_to_miles = True
+        self.distance = False # False for weight, True for distance
+        self.kg_to_lb = True # True for kg to lb, False for lb to kg
+        self.km_to_miles = True     # True for km to miles, False for miles to km
         ttk.Label(
             self.container,
             text="Unit converter",
@@ -35,9 +37,9 @@ class Unit:
             font=("Segoe UI", 10),
         )
         self.label.pack(pady=(0, 10))
-        self.buildui()
-
+        self.buildui() 
     def buildui(self):
+        """Create the entry, mode-switch buttons, and result label."""
         self.kgentry = tk.Entry(self.container)
         self.kgentry.pack(pady=10)
         self.kgentry.bind("<KeyRelease>", self.convert_to_pounds)
@@ -47,7 +49,9 @@ class Unit:
         self.switchto_button.pack(pady=10)
         self.result_label = ttk.Label(self.container, text="")
         self.result_label.pack(pady=10)
+        #switch between distance and weight conversion
     def switchto_distance_and_weight(self):
+        """Toggle the whole tool between distance mode and weight mode."""
         
         if self.km_to_miles and not self.distance:
             self.distance = True
@@ -70,8 +74,9 @@ class Unit:
             self.label.config(text="Enter pounds to convert to kilograms")
             self.kgentry.bind("<KeyRelease>", self.convert_to_kilograms)
             self.convert_to_kilograms(None)  # Update result immediately when switching back
-
+    
     def convert_to_pounds(self, event):
+        """Convert kilograms entered by the user into pounds."""
         value = self.kgentry.get().strip()
 
         if not value:
@@ -87,6 +92,7 @@ class Unit:
         pounds = kg * 2.20462
         self.result_label.config(text=f"{kg:.2f} kg = {pounds:.2f} lbs")
     def convert_to_kilograms(self, event):
+        """Convert pounds entered by the user into kilograms."""
         value = self.kgentry.get().strip()
 
         if not value:
@@ -102,6 +108,7 @@ class Unit:
         kg = lb / 2.20462
         self.result_label.config(text=f"{lb:.2f} lbs = {kg:.2f} kg")
     def convert_to_miles(self, event):
+        """Convert kilometers entered by the user into miles."""
         value = self.kgentry.get().strip()
 
         if not value:
@@ -117,6 +124,7 @@ class Unit:
         miles = km * 0.621371
         self.result_label.config(text=f"{km:.2f} km = {miles:.2f} miles")
     def convert_to_kilometers(self, event):
+        """Convert miles entered by the user into kilometers."""
         value = self.kgentry.get().strip()
 
         if not value:
@@ -131,27 +139,29 @@ class Unit:
 
         km = miles / 0.621371
         self.result_label.config(text=f"{miles:.2f} miles = {km:.2f} km")
+        #switch conversion
     def switch(self):
+        """Flip the current conversion direction within the active unit family."""
         if self.distance and self.km_to_miles:
             self.km_to_miles = False
-            self.label.config(text="Enter kilometers to convert to miles")
-            self.kgentry.bind("<KeyRelease>", self.convert_to_miles)
-            self.convert_to_miles(None)  # Update result immediately when switching
-        elif self.distance and not self.km_to_miles:
-            self.km_to_miles = True
             self.label.config(text="Enter miles to convert to kilometers")
             self.kgentry.bind("<KeyRelease>", self.convert_to_kilometers)
-            self.convert_to_kilometers(None)
+            self.convert_to_kilometers(None) 
+        elif self.distance and not self.km_to_miles:
+            self.km_to_miles = True
+            self.label.config(text="Enter kilometers to convert to miles")
+            self.kgentry.bind("<KeyRelease>", self.convert_to_miles)
+            self.convert_to_miles(None)
         elif self.kg_to_lb and not self.distance:
             self.kg_to_lb = False
             self.label.config(text="Enter pounds to convert to kilograms")
             self.kgentry.bind("<KeyRelease>", self.convert_to_kilograms)
-            self.convert_to_kilograms(None)  # Update result immediately when switching
+            self.convert_to_kilograms(None) 
         else:
             self.kg_to_lb = True
             self.label.config(text="Enter kilograms to convert to pounds")
             self.kgentry.bind("<KeyRelease>", self.convert_to_pounds)
-            self.convert_to_pounds(None)  # Update result immediately when switching back
+            self.convert_to_pounds(None)  
              # Update result immediately when switching back
         
 
@@ -159,6 +169,7 @@ class Unit:
 
 
 def run():
+    """Launch the Unit Converter tool."""
     root = tk.Tk()
     Unit(root)
     root.mainloop()

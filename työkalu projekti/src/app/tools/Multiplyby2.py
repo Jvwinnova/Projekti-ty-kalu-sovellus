@@ -1,3 +1,5 @@
+"""Persisted counter tool that doubles a number on each button press."""
+
 import tkinter as tk
 from tkinter import ttk
 import json
@@ -18,8 +20,9 @@ def _get_user_config_path():
 
 
 class multiplyby2:
-    """Basic window scaffold for a new tool."""
+    """Track a number and how many times it has been doubled."""
 
+    #default settings for first time setup
     DEFAULT_CONFIG = {
         "Multiply by 2": {
             "number": 1,
@@ -51,6 +54,7 @@ class multiplyby2:
         self.root.protocol("WM_DELETE_WINDOW", self.on_window_close)
 
     def _build_ui(self):
+        """Create labels and actions for multiplying or resetting the stored number."""
         container = ttk.Frame(self.root, padding=16)
         container.pack(fill=tk.BOTH, expand=True)
         container.bind("<Configure>", self._on_container_configure)
@@ -162,6 +166,7 @@ class multiplyby2:
 
 
 def run():
+    """Launch the Multiply by 2 tool."""
     root = tk.Tk()
     multiplyby2(root)
     root.mainloop()

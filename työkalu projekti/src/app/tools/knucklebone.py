@@ -1,3 +1,5 @@
+"""Single-player Knucklebones game against a simple AI opponent."""
+
 import tkinter as tk
 from tkinter import ttk
 import random
@@ -11,6 +13,7 @@ except ModuleNotFoundError:
 
 
 class Knucklebone:
+    """Manage the board state, scoring, and AI turns for Knucklebones."""
 
     def __init__(self, root: tk.Tk):
         self.root = root
@@ -90,6 +93,7 @@ class Knucklebone:
 
         self.update_ui()
     def startnewgame(self):
+        """Reset the match after a finished or interrupted game."""
         self._cancel_pending_ai_move()
         self.game_id += 1
         self.player_board = [[], [], []]
@@ -103,6 +107,7 @@ class Knucklebone:
         self.update_ui()
 
     def altstartnewgame(self):
+        """Reset the match and return to the initial roll prompt state."""
         self._cancel_pending_ai_move()
         self.game_id += 1
         self.player_board = [[], [], []]
@@ -116,6 +121,7 @@ class Knucklebone:
         self.update_ui()
     #        DIFFICULTY
     def set_difficulty(self, event):
+        """Switch AI behavior level and restart so the change applies cleanly."""
         self.ai_difficulty = self.difficulty_box.get()
         print("AI difficulty set to:", self.ai_difficulty)
         self.altstartnewgame()
@@ -158,6 +164,7 @@ class Knucklebone:
         self.canplay = True
         self.ai_turn()
     def ai_turn(self):
+        """Choose and schedule the AI's move based on the selected difficulty."""
         roll = random.randint(1, 6)
 
         valid_cols = [i for i in range(3) if len(self.ai_board[i]) < 3]
@@ -251,6 +258,7 @@ class Knucklebone:
         return total
 
     def is_full(self, board):
+        """Return True when every column on a board is filled."""
         return all(len(col) >= 3 for col in board)
 
     def end_game(self):
@@ -302,6 +310,7 @@ class Knucklebone:
 
 
 def run():
+    """Launch the Knucklebones game."""
     root = tk.Tk()
     Knucklebone(root)
     root.mainloop()

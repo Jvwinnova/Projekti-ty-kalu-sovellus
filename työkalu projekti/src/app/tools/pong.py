@@ -1,6 +1,7 @@
+"""Two-player local Pong built with pygame."""
+
 import pygame
-from pathlib import Path
-import sys
+from src.app.window_icon import find_app_icon_path
 
 pygame.init()
 
@@ -33,34 +34,9 @@ BALL_SLOW_AFTER_UNFREEZE_MS = 1500
 BALL_FORCE_STEP = 0.8
 BALL_FORCE_MAX = 6.0
 
-
-def _find_app_icon_path():
-    tools_dir = Path(__file__).resolve().parent
-    app_dir = tools_dir.parent
-    project_root = app_dir.parent
-    repo_root = project_root.parent
-    parent_repo_root = repo_root.parent
-    frozen_base = Path(getattr(sys, "_MEIPASS", "")) if getattr(sys, "frozen", False) else None
-
-    candidates = []
-    if frozen_base:
-        candidates.append(frozen_base / "assets" / "app.ico")
-
-    candidates.extend((
-        parent_repo_root / "assets" / "app.ico",
-        repo_root / "assets" / "app.ico",
-        project_root / "assets" / "app.ico",
-        app_dir / "assets" / "app.ico",
-    ))
-
-    for icon_path in candidates:
-        if icon_path.exists():
-            return icon_path
-    return None
-
-
 def _apply_pong_icon():
-    icon_path = _find_app_icon_path()
+    """Apply the shared application icon to the pygame window when available."""
+    icon_path = find_app_icon_path()
     if not icon_path:
         return
     try:
@@ -76,7 +52,8 @@ _apply_pong_icon()
 
 
 class Striker:
-        # Take the initial position, dimensions, speed and color of the object
+    """Represent one player paddle and its collision helpers."""
+
     def __init__(self, posx, posy, width, height, speed, color, side):
         self.posx = posx
         self.posy = posy
@@ -132,6 +109,8 @@ class Striker:
 
 
 class Ball:
+    """Track ball movement, scoring, and repeated-hit speed boosts."""
+
     def __init__(self, posx, posy, radius, speed, color):
         self.posx = posx
         self.posy = posy
@@ -234,6 +213,7 @@ class Ball:
 
 
 def main():
+    """Run the main Pong game loop until the window is closed."""
     running = True
     fps = FPS
     now_ms = pygame.time.get_ticks()

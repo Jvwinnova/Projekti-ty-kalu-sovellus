@@ -1,3 +1,5 @@
+"""Local two-player Tic Tac Toe played in a single window."""
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 
@@ -9,7 +11,7 @@ except ModuleNotFoundError:
 
 
 class TicTacToeGame:
-    """Tic Tac Toe mini game using Tkinter + ttk style."""
+    """Manage board state, turns, and win detection for Tic Tac Toe."""
 
     def __init__(self, root: tk.Tk):
         self.root = root
@@ -18,9 +20,9 @@ class TicTacToeGame:
 
         apply_app_icon(self.root)
 
-        self.player = "X"
-        self.stop_game = False
-
+        self.player = "X" # X always starts
+        self.stop_game = False # Flag to indicate if the game has ended
+        # 0 = empty, 1 = X, 2 = O
         self.states = [
             [0, 0, 0],
             [0, 0, 0],
@@ -71,6 +73,7 @@ class TicTacToeGame:
 
     # ---------------- GAME LOGIC ----------------
     def clicked(self, r, c):
+        """Handle a player's move when a board button is pressed."""
         if self.stop_game:
             return
 
@@ -86,6 +89,7 @@ class TicTacToeGame:
             self.player = "O" if self.player == "X" else "X"
 
     def check_win(self):
+        """Check rows, columns, diagonals, and tie state after each move."""
         s = self.states
 
         # rows + columns
@@ -113,11 +117,13 @@ class TicTacToeGame:
             messagebox.showinfo("Tie", "It's a tie!")
 
     def win(self, player):
+        """End the game and announce the winning player."""
         self.stop_game = True
         messagebox.showinfo("Winner", f"{player} Wins!")
 
     # ---------------- RESET ----------------
     def reset_game(self):
+        """Clear the board and reset turn order to the starting player."""
         self.player = "X"
         self.stop_game = False
 
@@ -129,6 +135,7 @@ class TicTacToeGame:
 
 # ---------------- RUN FUNCTION ----------------
 def run():
+    """Launch the Tic Tac Toe tool."""
     root = tk.Tk()
     TicTacToeGame(root)
     root.mainloop()

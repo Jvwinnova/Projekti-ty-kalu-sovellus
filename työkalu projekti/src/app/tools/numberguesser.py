@@ -1,3 +1,5 @@
+"""Guess-the-number game with configurable range and attempt count."""
+
 import random
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -26,6 +28,7 @@ class NumberGuesser:
         self._build_ui()
 
     def _build_ui(self):
+        """Create the controls for guessing, restarting, and changing limits."""
         container = ttk.Frame(self.root, padding=16)
         container.pack(fill=tk.BOTH, expand=True)
 
@@ -76,9 +79,11 @@ class NumberGuesser:
         ttk.Label(container, textvariable=self.attempts_var).pack()
 
     def _rules_text(self):
+        """Return the current range rule shown to the player."""
         return f"Guess a number between {self.min_value} and {self.max_value}."
     
     def _attempts_text(self):
+        """Return the text shown for remaining attempts."""
         return f"Attempts left: {self.attempts_left}"
     
     def _on_range_change(self, event=None):
@@ -120,6 +125,7 @@ class NumberGuesser:
         
 
     def _new_game(self):
+        """Pick a new secret number and reset win and attempt state."""
         self.secret = random.randint(self.min_value, self.max_value)
         self.attempts_left = self.max_attempts
         self.has_won = False
@@ -183,6 +189,7 @@ class NumberGuesser:
 
 
 def run():
+    """Launch the Number Guesser tool."""
     root = tk.Tk()
     NumberGuesser(root)
     root.mainloop()

@@ -13,6 +13,7 @@ except ModuleNotFoundError:
 
 
 def check_password(password: str, timeout_s: int = 10) -> int:
+    """Query the k-anonymity API and return the breach count for a password."""
     sha1 = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
     prefix = sha1[:5]
     suffix = sha1[5:]
@@ -113,6 +114,7 @@ class PwnedPasswordChecker:
         self.status_label.pack(pady=(0, 6))
 
     def _toggle_show(self):
+        """Show or mask the password entry field."""
         self.password_entry.configure(show="" if self.show_var.get() else "*")
 
     def _copy_link(self):
@@ -190,6 +192,7 @@ class PwnedPasswordChecker:
         thread.start()
 
     def _check_in_background(self, password: str):
+        """Run the network request off the UI thread and report back safely."""
         try:
             count = check_password(password)
             self.root.after(0, lambda: self._show_result(count))
@@ -210,6 +213,7 @@ class PwnedPasswordChecker:
         self._set_checking(False)
 
     def _set_checking(self, checking: bool):
+        """Disable inputs while a password check is in progress."""
         self._checking = checking
         state = tk.DISABLED if checking else tk.NORMAL
         self.check_button.configure(state=state)
@@ -217,6 +221,7 @@ class PwnedPasswordChecker:
 
 
 def run():
+    """Launch the Pwned Passwords checker."""
     root = tk.Tk()
     PwnedPasswordChecker(root)
     root.mainloop()
