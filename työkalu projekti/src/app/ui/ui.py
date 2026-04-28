@@ -19,6 +19,7 @@ from src.app.tools.randomwalk import RandomWalk
 from src.app.tools.passgen import PasswordGenerator
 from src.app.tools.tictatactoe import TicTacToeGame
 from src.app.tools.unit import Unit
+from src.app.tools.kmh import Kmh
 _OPEN_WINDOWS = {}
 _PONG_PROCESS = None
 
@@ -61,6 +62,7 @@ def create_ui(root):
         ("Multiply by 2", open_multiplyby2_window, "Multiply info", "Doubles a number."),
         ("Random Walk", open_template_window, "Random Walk info", "Infinite random movement simulation."),
         ("Unit Converter", open_unit_window, "Unit Converter info", "Converts between 2 different units of measurement."),
+        ("Kilometers Per Hour", open_kmh_window, "KMH info", "simulates distance traveled based on a constant speed."),
     ]
 
     _build_tool_grid(irrelevant_frame, irrelevant_tools)
@@ -189,6 +191,9 @@ def open_knucklebone_window():
 
 def open_minigame_template_window():
     _open_singleton_window("minigame_template", TicTacToeGame)
+
+def open_kmh_window():
+    _open_singleton_window("kmh", Kmh)
 
 
 def open_pong_window():
