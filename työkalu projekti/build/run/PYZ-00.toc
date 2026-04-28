@@ -1287,6 +1287,10 @@
    'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
    'projekti\\src\\app\\tools\\colourseekingcursor.py',
    'PYMODULE'),
+  ('src.app.tools.kmh',
+   'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
+   'projekti\\src\\app\\tools\\kmh.py',
+   'PYMODULE'),
   ('src.app.tools.knucklebone',
    'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
    'projekti\\src\\app\\tools\\knucklebone.py',
