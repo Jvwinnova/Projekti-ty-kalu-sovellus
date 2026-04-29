@@ -11,8 +11,15 @@ def _find_project_root(start: Path) -> Path:
 
 spec_dir = Path(SPECPATH).resolve()
 project_root = _find_project_root(spec_dir)
-icon_file = project_root / "assets" / "app.ico"
-copy_icon_file = project_root / "assets" / "copy.png"
+repo_root = project_root.parent
+project_assets_dir = project_root / "assets"
+shared_assets_dir = repo_root / "assets"
+
+icon_file = project_assets_dir / "app.ico"
+if not icon_file.exists():
+    icon_file = shared_assets_dir / "app.ico"
+
+copy_icon_file = project_assets_dir / "copy.png"
 icon_path = icon_file if icon_file.exists() else None
 data_files = []
 
