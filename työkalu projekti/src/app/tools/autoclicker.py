@@ -57,6 +57,7 @@ class AutoClicker:
         self.root = root
         self.root.title("Auto Clicker")
         self.root.geometry("500x400")
+        self.root.attributes("-topmost", True)
         #applies the app icon to the window
         apply_app_icon(self.root)
         #calls a function to set up fullscreen toggle on F11

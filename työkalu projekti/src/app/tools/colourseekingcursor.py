@@ -56,6 +56,7 @@ class ColourSeekingCursor:
         self.root = root
         self.root.title("Colour Seeking Cursor")
         self.root.geometry("650x600")
+        self.root.attributes("-topmost", True)
         self.root.resizable(True, True)
         # Make cursor warps immediate with no implicit PyAutoGUI delays.
         pyautogui.PAUSE = 0
