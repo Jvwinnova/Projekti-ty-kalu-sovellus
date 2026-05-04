@@ -18,6 +18,7 @@ class Calc:
         self.root = root
         self.root.title("Calculator")
         self.root.geometry("360x460")
+        self.root.attributes("-topmost", True)
         self.root.resizable(False, False)
         apply_app_icon(self.root)
 

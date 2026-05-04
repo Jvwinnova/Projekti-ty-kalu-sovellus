@@ -30,6 +30,7 @@ class Stopwatch:
         self.root = root
         self.root.title("Stopwatch")
         self.root.geometry("360x220")
+        self.root.attributes("-topmost", True)
         self.root.resizable(False, False)
         apply_app_icon(self.root)
 
