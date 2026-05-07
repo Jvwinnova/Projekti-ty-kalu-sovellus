@@ -1,9 +1,13 @@
 pyautogui
 keyboard
 pillow
+customtkinter
 requests
 pygame
 tkcolorpicker
 python-vlc
 numpy
 matplotlib
+openai
+audioplayer
+pyperclip

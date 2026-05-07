@@ -4,6 +4,7 @@ import subprocess
 import sys
 import os
 import datetime
+import json
 
 from src.app.tools.autoclicker import AutoClicker
 from src.app.tools.colourseekingcursor import ColourSeekingCursor
@@ -18,10 +19,13 @@ from src.app.tools.write import Write
 from src.app.tools.randomwalk import RandomWalk
 from src.app.tools.passgen import PasswordGenerator
 from src.app.tools.tictatactoe import TicTacToeGame
+from src.app.tools.rps import RpsGame
 from src.app.tools.unit import Unit
 from src.app.tools.kmh import Kmh
+
 _OPEN_WINDOWS = {}
 _PONG_PROCESS = None
+
 
 
 def create_ui(root):
@@ -63,6 +67,7 @@ def create_ui(root):
         ("Random Walk", open_template_window, "Random Walk info", "Infinite random movement simulation."),
         ("Unit Converter", open_unit_window, "Unit Converter info", "Converts between 2 different units of measurement."),
         ("Kilometers Per Hour", open_kmh_window, "KMH info", "simulates distance traveled based on a constant speed."),
+       
     ]
 
     _build_tool_grid(irrelevant_frame, irrelevant_tools)
@@ -78,6 +83,7 @@ def create_ui(root):
         ("Knucklebones", open_knucklebone_window, "Knucklebone info", "Dice strategy game."),
         ("Number Guesser", open_number_guesser_window, "Guess info", "Guess the secret number."),
         ("Tic Tac Toe", open_minigame_template_window, "Tic Tac Toe info", "Classic Tic Tac Toe game."),
+        ("Rock Paper Scissors", open_rps_window, "Rock Paper Scissors info", "Play Rock Paper Scissors against the computer."),
     ]
 
     _build_tool_grid(games_frame, games_tools)
@@ -194,6 +200,11 @@ def open_minigame_template_window():
 
 def open_kmh_window():
     _open_singleton_window("kmh", Kmh)
+
+def open_rps_window():
+    _open_singleton_window("rps", RpsGame)
+
+
 
 
 def open_pong_window():

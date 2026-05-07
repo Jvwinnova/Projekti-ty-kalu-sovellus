@@ -37,6 +37,8 @@ a = Analysis(
     hiddenimports=[
         "pygame",
         "requests",
+        "openai",
+        "audioplayer",
         "pyautogui",
         "pyscreeze",
         "pymsgbox",
