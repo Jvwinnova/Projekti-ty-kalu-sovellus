@@ -20,6 +20,7 @@ from src.app.tools.randomwalk import RandomWalk
 from src.app.tools.passgen import PasswordGenerator
 from src.app.tools.tictatactoe import TicTacToeGame
 from src.app.tools.rps import RpsGame
+from src.app.tools.madlib import MadLib
 from src.app.tools.unit import Unit
 from src.app.tools.kmh import Kmh
 
@@ -84,6 +85,7 @@ def create_ui(root):
         ("Number Guesser", open_number_guesser_window, "Guess info", "Guess the secret number."),
         ("Tic Tac Toe", open_minigame_template_window, "Tic Tac Toe info", "Classic Tic Tac Toe game."),
         ("Rock Paper Scissors", open_rps_window, "Rock Paper Scissors info", "Play Rock Paper Scissors against the computer."),
+        ("Mad Lib", open_madlib_window, "Mad Lib info", "Create your own stories by filling in the blanks."),
     ]
 
     _build_tool_grid(games_frame, games_tools)
@@ -203,6 +205,9 @@ def open_kmh_window():
 
 def open_rps_window():
     _open_singleton_window("rps", RpsGame)
+
+def open_madlib_window():
+    _open_singleton_window("madlib", MadLib)
 
 
 
