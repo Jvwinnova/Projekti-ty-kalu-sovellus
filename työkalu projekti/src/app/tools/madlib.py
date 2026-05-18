@@ -17,18 +17,15 @@ class MadLib:
 
     STORIES = [
         """
-        One day, a {animal} went to {place} to {base_verb}.
-        Everyone thought it was very {adjective}.
+        One day, a {animal} went to {place} to {base_verb}. Everyone thought it was very {adjective}.
         """,
 
         """
-        Yesterday, {person_name} threw a {object} into the sky
-        and accidentally hit a {animal}.
+        Yesterday, {person_name} threw a {object} into the sky and accidentally hit a {animal}.
         """,
 
         """
-        The king of {place} ordered everyone to eat
-        {food} while dancing with a {object}.
+        The king of {place} ordered everyone to eat {food} while dancing with a {object}.
         """,
 
         """
@@ -40,51 +37,39 @@ class MadLib:
         """,
 
         """
-        Last night, I walked into a spooky pizza shop run by a dracula named {person_name}.
-        He was wearing a giant {clothing_item} and juggling {plural_noun}.
+        Last night, I walked into a spooky pizza shop run by a dracula named {person_name}. He was wearing a giant {clothing_item} and juggling {plural_noun}.
         """,
 
         """
-        The {adjective} wizard named {person_name} cast a spell
-        that turned the king into a {animal}.
+        The {adjective} wizard named {person_name} cast a spell that turned the king into a {animal}.
         """,
 
         """
-        In the {adjective} city of {place}, a {animal} was elected mayor
-        and promised to {base_verb} every day.
+        In the {adjective} city of {place}, a {animal} was elected mayor and promised to {base_verb} every day.
         """,
 
         """
-        The {adjective} superhero named {person_name}
-        had the power to {base_verb} and always wore a {clothing_item}.
+        The {adjective} superhero named {person_name} had the power to {base_verb} and always wore a {clothing_item}.
         """,
 
         """
-        At the {adjective} zoo, a {animal} named {person_name}
-        escaped and started {verb_ing} with the visitors.
+        At the {adjective} zoo, a {animal} named {name} escaped and started {verb_ing} with the visitors.
         """,
 
         """
-        The {adjective} pirate named {person_name}
-        sailed the seas in search of a legendary {object}
-        that could {base_verb}.
+        The {adjective} pirate named {person_name} sailed the seas in search of a legendary {object} that could {base_verb}.
         """,
 
         """
-        A {adjective} scientist found a {object} that could cure all diseases,
-        but {person_name} {verb_past} and accidentally created
-        a {animal} that could talk.
+        A {adjective} scientist found a {object} that could cure all diseases, but {person_name} {verb_past} and accidentally created a {animal} that could talk.
         """,
 
         """
-        {person_name} {verb_past} with {second_person_name},
-        then they {second_verb_past} and became really {adjective} friends.
+        {person_name} {verb_past} with {second_person_name}, then they {second_verb_past} and became really {adjective} friends.
         """,
 
         """
-        {person_name} {verb_past} a {object}
-        and discovered it was a portal to a {adjective} world
-        filled with {plural_noun}.
+        {person_name} {verb_past} a {object} and discovered it was a portal to a {adjective} world filled with {plural_noun}.
         """,
 
         """
@@ -92,13 +77,16 @@ class MadLib:
         """,
 
         """
-        The {adjective} chef named {person_name} created a new dish
-        that combined {food} and {food}, and it became an instant hit.
+        The {adjective} chef named {person_name} created a new dish by combining {food1} and {food2}, and it became an instant hit.
         """,
 
           """
         The {adjective} detective named {person_name} solved the mystery of the missing {object} by {verb_ing} with a {animal}.
         """,
+        """        In the {adjective} kingdom of {place}, a {noun} was crowned king and promised to {base_verb} for all.""",
+        """       Captain {person_name} landed on the planet {place} after a long and {adjective} journey.""",
+
+
     ]
         
 
