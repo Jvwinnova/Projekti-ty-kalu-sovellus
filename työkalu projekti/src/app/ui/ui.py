@@ -85,7 +85,7 @@ def create_ui(root):
         ("Number Guesser", open_number_guesser_window, "Guess info", "Guess the secret number."),
         ("Tic Tac Toe", open_minigame_template_window, "Tic Tac Toe info", "Classic Tic Tac Toe game."),
         ("Rock Paper Scissors", open_rps_window, "Rock Paper Scissors info", "Play Rock Paper Scissors against the computer."),
-        ("Mad Lib", open_madlib_window, "Mad Lib info", "Create your own stories by filling in the blanks."),
+        ("Mad Lib", open_madlib_window, "Mad Lib info", "Create your own stories by filling in the blanks. (extra controls: Up/Down to navigate, Enter to generate)"),
     ]
 
     _build_tool_grid(games_frame, games_tools)

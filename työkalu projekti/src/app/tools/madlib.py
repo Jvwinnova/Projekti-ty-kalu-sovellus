@@ -4,7 +4,7 @@ import random
 import re
 import tkinter as tk
 from tkinter import ttk
-
+import keyboard
 try:
     from src.app.window_icon import apply_app_icon
 except ModuleNotFoundError:
@@ -85,6 +85,14 @@ class MadLib:
         """,
         """        In the {adjective} kingdom of {place}, a {noun} was crowned king and promised to {base_verb} for all.""",
         """       Captain {person_name} landed on the planet {place} after a long and {adjective} journey.""",
+        """ a {adjective} {animal} was found in the {place} and became a local celebrity for its ability to {base_verb}.""",
+        """       The {adjective} inventor named {person_name} created a {object} that could {base_verb}, but it accidentally turned into a {noun}.""",
+        """       {person_name} {verb_past} a {object} and discovered it was a portal to a {adjective} world filled with {plural_noun}.""",
+        """ Last night, {person_name} got lost in the woods near {place}. After hours of walking, they discovered an old cabin made of {plural_noun1}.
+        Inside, the air smelled like {smell}, and the floor was covered in {plural_noun2}
+        Suddenly, a voice whispered, “Dont open the {object}...”
+        Of course, they opened it anyway..""",
+        
 
 
     ]
@@ -101,13 +109,16 @@ class MadLib:
         self.root = root
         self.root.title("Mad Lib")
         self.root.geometry("500x500")
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
 
         apply_app_icon(self.root)
 
         self.entries = {}
 
         self.story_template = random.choice(self.STORIES)
+        root.bind("<Up>", lambda e: self.previous_row())
+        root.bind("<Down>", lambda e: self.next_row())
+        root.bind("<Return>", lambda e: self.generate_story())
 
         self._build_ui()
 
@@ -201,6 +212,31 @@ class MadLib:
         self.result_text.delete("1.0", tk.END)
         self.result_text.insert(tk.END, final_story.strip())
         self.result_text.config(state="disabled")
+    
+    def next_row(self):
+        """Move focus to the next entry field."""
+        entries = list(self.entries.values())
+        if not entries:
+            return
+
+        current = self.root.focus_get()
+        if current in entries:
+            idx = entries.index(current)
+            next_idx = (idx + 1) % len(entries)
+            entries[next_idx].focus_set()
+
+    def previous_row(self):
+        """Move focus to the previous entry field."""
+        entries = list(self.entries.values())
+        if not entries:
+            return
+
+        current = self.root.focus_get()
+        if current in entries:
+            idx = entries.index(current)
+            prev_idx = (idx - 1) % len(entries)
+            entries[prev_idx].focus_set()
+
     def new_story(self):
         self.result_text.config(state="normal")
         self.generatestory_btn.config(state="normal")
