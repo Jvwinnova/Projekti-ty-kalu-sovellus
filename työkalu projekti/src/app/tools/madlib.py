@@ -141,7 +141,12 @@ class MadLib:
             wraplength=380,
             justify="center",
         ).pack(pady=(0, 20))
-
+        
+        ttk.Button(
+            container,
+            text="New Story",
+            command=self.new_story,
+        ).pack(pady=(10, 0))
         # Frame that holds all dynamic input fields
         self.form_frame = ttk.Frame(container)
         self.form_frame.pack(fill=tk.X)
@@ -149,11 +154,7 @@ class MadLib:
         # Build initial fields
         self.build_fields()
 
-        ttk.Button(
-            container,
-            text="New Story",
-            command=self.new_story,
-        ).pack(pady=(10, 0))
+        
 
         self.generatestory_btn = ttk.Button(
             container,

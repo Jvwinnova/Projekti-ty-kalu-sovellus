@@ -1295,6 +1295,10 @@
    'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
    'projekti\\src\\app\\tools\\knucklebone.py',
    'PYMODULE'),
+  ('src.app.tools.madlib',
+   'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
+   'projekti\\src\\app\\tools\\madlib.py',
+   'PYMODULE'),
   ('src.app.tools.musicfile',
    'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
    'projekti\\src\\app\\tools\\musicfile.py',
@@ -1318,6 +1322,10 @@
   ('src.app.tools.randomwalk',
    'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
    'projekti\\src\\app\\tools\\randomwalk.py',
+   'PYMODULE'),
+  ('src.app.tools.rps',
+   'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
+   'projekti\\src\\app\\tools\\rps.py',
    'PYMODULE'),
   ('src.app.tools.stopwatch',
    'C:\\Users\\35844\\Documents\\GitHub\\Projekti\\työkalu '
